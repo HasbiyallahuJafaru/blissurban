@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 
-const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blissurban.example";
+// `||` not `??`: an env var set to an empty string would otherwise produce
+// relative URLs like "/rooms" in the sitemap.
+const base = process.env.NEXT_PUBLIC_SITE_URL || "https://blissurban.example";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return ["", "/rooms", "/restaurant", "/lounge"].map((path) => ({

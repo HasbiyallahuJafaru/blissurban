@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 
-const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blissurban.example";
+// `||` not `??`: an env var set to an empty string would otherwise produce
+// relative URLs like "/rooms" in robots.txt.
+const base = process.env.NEXT_PUBLIC_SITE_URL || "https://blissurban.example";
 
 export default function robots(): MetadataRoute.Robots {
   return {

@@ -17,7 +17,9 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://blissurban.example"),
+  // `||` not `??`: an env var set to an empty string is present but useless,
+  // and `new URL("")` throws and fails the whole build.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://blissurban.example"),
   title: {
     default: "Bliss Urban Hotels & Suites — Barnawa, Kaduna",
     template: "%s — Bliss Urban Hotels & Suites",
