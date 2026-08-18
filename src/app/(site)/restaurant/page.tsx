@@ -7,7 +7,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Restaurant",
   description:
-    "Northern Nigerian and continental cooking in Barnawa, Kaduna. Order to your room, to a table, or to take away. The kitchen runs until midnight.",
+    "Pepper soup, rice and spaghetti at Bliss Urban Hotels & Suites, Narayi High Cost, Barnawa, Kaduna. Order to your room, to a table, or to take away.",
 };
 
 export default async function RestaurantPage() {
@@ -17,10 +17,11 @@ export default async function RestaurantPage() {
     <MenuSection
       section="restaurant"
       items={items}
+      heroPhoto="photo-1504674900247-0877df9cc836"
       eyebrow="Ground floor, from 07:00"
-      title="Tuwo, suya, and"
-      italic="a proper breakfast."
-      body="The kitchen cooks northern food the way it should be cooked, and keeps a continental menu for the mornings you have a flight. Order to your room, to a table downstairs, or to take away."
+      title="Pepper soup, the way"
+      italic="it should taste."
+      body="Catfish, goat meat, cow tail and kayan chiki, all cooked to order. Rice and spaghetti alongside. Send it up to your room, take a table downstairs, or collect it on your way through."
     />
   );
 }

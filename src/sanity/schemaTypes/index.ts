@@ -29,6 +29,8 @@ const siteSettings = defineType({
   ],
   fields: [
     defineField({ name: "phone", type: "string", group: "contact", description: "Shown in the header and footer." }),
+    defineField({ name: "phoneAlt", title: "Second phone", type: "string", group: "contact" }),
+    defineField({ name: "email", type: "string", group: "contact" }),
     defineField({
       name: "whatsapp",
       type: "string",
@@ -42,6 +44,7 @@ const siteSettings = defineType({
     defineField({ name: "heroHeadline", type: "string", group: "hero", description: "First line, set upright." }),
     defineField({ name: "heroHeadlineItalic", type: "string", group: "hero", description: "Second line, set in italic." }),
     defineField({ name: "heroBody", type: "text", rows: 3, group: "hero" }),
+    defineField({ ...image, name: "heroImage", title: "Hero image", group: "hero" }),
 
     defineField({
       name: "amenities",
@@ -99,6 +102,13 @@ const room = defineType({
     defineField({ name: "description", type: "text", rows: 3 }),
     defineField({ name: "amenities", type: "array", of: [{ type: "string" }], options: { layout: "tags" } }),
     image,
+    defineField({
+      name: "images",
+      title: "More photos",
+      type: "array",
+      of: [{ type: "image", options: { hotspot: true } }],
+      description: "Shown in the gallery when someone opens this room.",
+    }),
     defineField({ name: "featured", type: "boolean", description: "Shown large on the home page. Pick one." }),
     defineField({ name: "available", type: "boolean", initialValue: true, description: "Untick to hide from the site." }),
   ],

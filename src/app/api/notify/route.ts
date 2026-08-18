@@ -32,6 +32,9 @@ const Payload = z.discriminatedUnion("type", [
     checkIn: z.string().max(20),
     checkOut: z.string().max(20),
     guests: z.number().int().min(1).max(12),
+    transfer: z.enum(["none", "arrival", "departure", "both"]).default("none"),
+    transferPlace: z.string().trim().max(120).optional(),
+    transferTime: z.string().trim().max(40).optional(),
     ...contact,
   }),
   z.object({
@@ -119,12 +122,26 @@ export async function POST(request: Request) {
       if (!room) {
         return NextResponse.json({ ok: false, error: "That room is no longer listed." }, { status: 400 });
       }
+      const TRANSFER_LABEL = {
+        arrival: "Pick up, to the hotel",
+        departure: "Drop off, from the hotel",
+        both: "Both ways",
+      } as const;
+
+      const transfer =
+        data.transfer === "none"
+          ? "\n<b>Transfer:</b> not needed"
+          : `\n\n🚗 <b>TRANSFER — ${TRANSFER_LABEL[data.transfer]}</b>` +
+            (data.transferPlace ? `\n<b>Where:</b> ${esc(data.transferPlace)}` : "") +
+            (data.transferTime ? `\n<b>When:</b> ${esc(data.transferTime)}` : "");
+
       await sendToTelegram(
         `🔑 <b>ROOM REQUEST</b> · ${orderRef}\n` +
           `\n<b>${esc(room.name)}</b> — ${naira(room.price)} per night` +
           `\n<b>Check in:</b> ${esc(data.checkIn)}` +
           `\n<b>Check out:</b> ${esc(data.checkOut)}` +
           `\n<b>Guests:</b> ${data.guests}` +
+          transfer +
           who +
           `\n\n<i>${stamp()}</i>`,
         TOPIC.reservation,

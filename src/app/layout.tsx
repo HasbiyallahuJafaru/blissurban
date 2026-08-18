@@ -34,15 +34,16 @@ export const metadata: Metadata = {
 const CONTRACT = `<!--
 THESIS: A Kaduna business hotel proves itself with facts a traveller actually checks
 (power, gate, wifi, kitchen hours), not with a stock chandelier over a full-bleed video.
-OWN-WORLD: Gold-blocked leather. Tanned-hide ground with grain, never flat black; gold is
-leaf and brass, so rules are tooled (dark above, foil below), panels are bound plates, and
-the arrow motif is a set eyelet. Bodoni Moda with opsz pinned low against Archivo.
+OWN-WORLD: Foil-blocked stationery. Warm paper stock with tooth, black ink, gold foil as a
+material rather than a tint: rules are struck with a lit lower edge, panels are letterpress
+plates, and one ink band per page carries the weight. Bodoni Moda against Archivo.
 STORY: This is clean, secure and powered; a person answers within seconds; request a room,
 order dinner, or hold a table.
-FIRST VIEWPORT: Split. Left, an eyebrow, a Bodoni headline breaking to gold italic, one
-paragraph, a gold pill beside a ghost pill, and a tooled fact row. Right, a bound plate with
-a rate card overlapping its lower-left corner.
-FORM: Gold-blocked leather, candidate 4 of the grounded list; seed key 93c59e7b.
+FIRST VIEWPORT: Deliberately off-axis, 5/7 not 6/6. Left, an eyebrow, a Bodoni headline
+breaking to gold italic, one paragraph, two pills, a foil-ruled fact row. Right, a plate
+running off the right edge with a rate card set half onto the paper.
+FORM: Foil-blocked stationery, from the gold-blocked leather direction (candidate 4,
+seed key 93c59e7b) re-grounded on the client's beige/white/black/gold palette.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review,
 the verdict, and DESIGN.md
 -->`;

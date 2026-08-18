@@ -34,9 +34,9 @@ export async function postNotify(
 }
 
 const wellClass =
-  "w-full rounded-xl border border-leaf/20 bg-hide/70 px-4 py-3 text-[0.95rem] text-bone " +
-  "shadow-[inset_0_1px_3px_rgba(0,0,0,0.55)] placeholder:text-bone-dim/55 " +
-  "transition focus:border-leaf/70 [color-scheme:dark]";
+  "w-full rounded-sm border border-ink/18 bg-paper px-4 py-3 text-[0.95rem] text-ink " +
+  "shadow-[inset_0_1px_3px_color-mix(in_srgb,var(--color-ink)_10%,transparent)] " +
+  "placeholder:text-ink-3/70 transition focus:border-gold";
 
 export function Field({
   label,
@@ -49,11 +49,11 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-leaf/85">
+      <span className="mb-2 block text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-gold-deep">
         {label}
       </span>
       {children}
-      {hint ? <span className="mt-1.5 block text-xs text-bone-dim">{hint}</span> : null}
+      {hint ? <span className="mt-1.5 block text-xs text-ink-3">{hint}</span> : null}
     </label>
   );
 }
@@ -95,16 +95,16 @@ export function Result({
 }) {
   if (state.status === "sent") {
     return (
-      <div className="plate p-6 text-center">
-        <p className="display text-2xl text-leaf">Sent to the front desk</p>
-        <p className="mt-3 text-sm leading-relaxed text-bone-dim">
+      <div className="plate p-8 text-center">
+        <p className="display text-2xl text-ink">Sent to the front desk</p>
+        <p className="mx-auto mt-4 max-w-sm text-sm leading-[1.75] text-ink-2">
           Your reference is{" "}
-          <span className="tabular font-semibold text-bone">{state.ref}</span>. Someone will call you
+          <span className="tabular font-semibold text-ink">{state.ref}</span>. Someone will call you
           back to confirm. Nothing is booked or charged until they do.
         </p>
         <button
           onClick={onReset}
-          className="press mt-6 rounded-full border border-leaf/35 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-leaf hover:bg-leaf/10"
+          className="press mt-7 rounded-full border border-ink/25 px-6 py-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-ink hover:bg-paper-2"
         >
           Send another
         </button>
@@ -114,21 +114,21 @@ export function Result({
 
   if (state.status === "failed") {
     return (
-      <div className="plate border-leaf/40 p-6">
-        <p className="text-sm font-semibold text-bone">{state.error}</p>
-        <p className="mt-2 text-sm leading-relaxed text-bone-dim">
+      <div className="plate border-gold/60 p-8">
+        <p className="text-sm font-semibold text-ink">{state.error}</p>
+        <p className="mt-2.5 text-sm leading-[1.75] text-ink-2">
           Send it on WhatsApp instead and the front desk will pick it up there.
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-6 flex flex-wrap gap-3">
           <a
             href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(fallbackText)}`}
-            className="press leaf-field rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-hide"
+            className="press rounded-full bg-ink px-6 py-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-paper"
           >
             Open WhatsApp
           </a>
           <button
             onClick={onReset}
-            className="press rounded-full border border-leaf/35 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-leaf hover:bg-leaf/10"
+            className="press rounded-full border border-ink/25 px-6 py-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-ink hover:bg-paper-2"
           >
             Try again
           </button>

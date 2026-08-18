@@ -126,11 +126,37 @@ trips the honeypot gets a normal-looking response so a bot learns nothing.
 If Telegram is unreachable, the form shows a WhatsApp link pre-filled with the same
 details rather than a dead end.
 
+## Photography
+
+The site currently shows Unsplash photographs as stand-ins, hotlinked from
+`images.unsplash.com`. Their ids live in `src/sanity/lib/seed.ts` and at the top of
+`src/app/(site)/page.tsx`.
+
+**These are pictures of other hotels.** They are fine while the site is in
+development, but a guest booking a room based on a photograph of a different
+building has been misled, so they must come out before launch. Upload real photos in
+Studio and they take precedence automatically: `picture()` in `src/sanity/lib/image.ts`
+prefers a Sanity asset, falls back to the Unsplash id, and falls back again to a
+drawn foil panel if there is neither.
+
+## What is real and what is not
+
+Real, supplied by the hotel:
+
+- the address, both phone numbers, and the email
+- the entire restaurant menu with its prices
+
+Still placeholder, and marked as such by a ribbon at the top of every page:
+
+- room types, descriptions and nightly rates
+- the whole lounge list, drinks and shisha
+- every photograph
+
 ## Before launch
 
-- [ ] Replace the drawn placeholder artwork with real photography of the rooms, food and lounge
+- [ ] Replace every Unsplash photo with real pictures of this building
 - [ ] Enter real room types and rates in Studio
-- [ ] Confirm the menu and prices
+- [ ] Supply the lounge and drinks list
 - [ ] Set the Sanity project id, Telegram token, chat id and topic ids in Vercel
 - [ ] Point `NEXT_PUBLIC_SITE_URL` at the real domain, for the sitemap and canonical URLs
 - [ ] Send one test booking and one test order and confirm they land in the right topics

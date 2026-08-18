@@ -74,8 +74,8 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
   if (lines.length === 0) {
     return (
       <div className="plate p-10 text-center">
-        <p className="display text-2xl text-bone">Nothing in your order yet</p>
-        <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-bone-dim">
+        <p className="display text-2xl text-ink">Nothing in your order yet</p>
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-ink-2">
           Add something from the kitchen or the bar and it will show up here.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
@@ -94,48 +94,48 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
     <div className="grid gap-8 lg:grid-cols-[1fr_0.85fr] lg:gap-12">
       {/* ------------------------------------------------------- the order */}
       <div className="plate p-6 lg:p-8">
-        <h2 className="display text-xl text-bone">Your order</h2>
+        <h2 className="display text-xl text-ink">Your order</h2>
 
         <ul className="mt-5">
           {lines.map((l) => (
-            <li key={l.id} className="tooled-t flex items-center gap-4 py-4 first:border-t-0 first:shadow-none">
+            <li key={l.id} className="rule-ink flex items-center gap-4 py-4 first:border-t-0 first:shadow-none">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[0.95rem] text-bone">{l.name}</p>
-                <p className="tabular mt-0.5 text-xs text-bone-dim">
+                <p className="truncate text-[0.95rem] text-ink">{l.name}</p>
+                <p className="tabular mt-0.5 text-xs text-ink-2">
                   {naira(l.price)} each, {l.section}
                 </p>
               </div>
 
-              <div className="flex items-center gap-1 rounded-full border border-leaf/25 p-1">
+              <div className="flex items-center gap-1 rounded-full border border-ink/20 p-1">
                 <button
                   onClick={() => setQty(l.id, l.qty - 1)}
                   aria-label={`Remove one ${l.name}`}
-                  className="press grid size-8 place-items-center rounded-full text-leaf hover:bg-leaf/15"
+                  className="press grid size-8 place-items-center rounded-full text-gold-deep hover:bg-paper-2"
                 >
                   {"\u2212"}
                 </button>
-                <span className="tabular w-6 text-center text-sm font-semibold text-bone">{l.qty}</span>
+                <span className="tabular w-6 text-center text-sm font-semibold text-ink">{l.qty}</span>
                 <button
                   onClick={() => setQty(l.id, l.qty + 1)}
                   aria-label={`Add one ${l.name}`}
-                  className="press grid size-8 place-items-center rounded-full text-leaf hover:bg-leaf/15"
+                  className="press grid size-8 place-items-center rounded-full text-gold-deep hover:bg-paper-2"
                 >
                   +
                 </button>
               </div>
 
-              <p className="tabular w-24 shrink-0 text-right text-[0.95rem] text-leaf">
+              <p className="tabular w-24 shrink-0 text-right text-[0.95rem] text-gold-deep">
                 {naira(l.price * l.qty)}
               </p>
             </li>
           ))}
         </ul>
 
-        <div className="tooled-t mt-2 flex items-baseline justify-between pt-5">
-          <span className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-bone-dim">Total</span>
-          <span className="tabular display text-3xl text-leaf">{naira(total)}</span>
+        <div className="rule-ink mt-2 flex items-baseline justify-between pt-5">
+          <span className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-ink-2">Total</span>
+          <span className="tabular display text-3xl text-gold-deep">{naira(total)}</span>
         </div>
-        <p className="mt-3 text-xs leading-relaxed text-bone-dim">
+        <p className="mt-3 text-xs leading-relaxed text-ink-2">
           Prices are confirmed by the kitchen when they see the order. You pay on delivery or at the desk.
         </p>
       </div>
@@ -143,12 +143,12 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
       {/* ---------------------------------------------------------- details */}
       <form onSubmit={onSubmit} className="plate relative h-fit p-6 lg:p-8">
         <Honeypot />
-        <h2 className="display text-xl text-bone">Where is it going?</h2>
+        <h2 className="display text-xl text-ink">Where is it going?</h2>
 
         <div
           role="radiogroup"
           aria-label="Where is it going?"
-          className="mt-5 grid grid-cols-3 gap-1 rounded-full border border-leaf/25 p-1"
+          className="mt-5 grid grid-cols-3 gap-1 rounded-full border border-ink/20 p-1"
         >
           {(Object.keys(PLACE) as Array<keyof typeof PLACE>).map((key) => (
             <button
@@ -158,7 +158,7 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
               aria-checked={fulfilment === key}
               onClick={() => setFulfilment(key)}
               className={`press rounded-full py-2.5 text-[0.66rem] font-bold uppercase tracking-[0.1em] ${
-                fulfilment === key ? "leaf-field text-hide" : "text-bone-dim hover:text-bone"
+                fulfilment === key ? "foil-fill text-paper" : "text-ink-2 hover:text-ink"
               }`}
             >
               {key === "room" ? "My room" : key === "table" ? "A table" : "Takeaway"}
@@ -200,7 +200,7 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
           {state.status === "sending" ? "Sending" : `Send order, ${naira(total)}`}
         </PillButton>
 
-        <p className="mt-4 text-center text-xs leading-relaxed text-bone-dim">
+        <p className="mt-4 text-center text-xs leading-relaxed text-ink-2">
           No payment here. The order goes straight to the kitchen and you settle in person.
         </p>
       </form>

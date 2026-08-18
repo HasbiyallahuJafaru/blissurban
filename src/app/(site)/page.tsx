@@ -3,15 +3,40 @@ import { Plate } from "@/components/Plate";
 import { ArrowRight, Eyebrow, Eyelet, Icon, PillLink, SectionHead } from "@/components/ui";
 import { naira } from "@/lib/format";
 import { getRooms, getSettings } from "@/sanity/lib/fetch";
-import { imageUrl } from "@/sanity/lib/image";
+import { picture, unsplash } from "@/sanity/lib/image";
 
 export const revalidate = 60;
 
 const SECTIONS = [
-  { href: "/rooms", label: "Rooms & Suites", note: "Four types, from single to a suite that seats six." },
-  { href: "/restaurant", label: "Restaurant", note: "Northern kitchen and continental, served to your room." },
-  { href: "/lounge", label: "Lounge", note: "Cocktails, zobo, shisha, and somewhere to sit." },
+  {
+    href: "/rooms",
+    label: "Rooms & Suites",
+    note: "Four types, from a single to a suite that seats six.",
+    offset: "lg:mt-0",
+    photo: "photo-1582719478250-c89cae4dc85b",
+  },
+  {
+    href: "/restaurant",
+    label: "Restaurant",
+    note: "Pepper soups and rice, sent up to your room.",
+    offset: "lg:mt-20",
+    photo: "photo-1517248135467-4c7edcad34c4",
+  },
+  {
+    href: "/lounge",
+    label: "Lounge",
+    note: "Somewhere to sit when the meetings are done.",
+    offset: "lg:mt-8",
+    photo: "photo-1514933651103-005eec06c04b",
+  },
 ];
+
+/* Stand-ins until the hotel supplies its own photography. The hero is
+   deliberately not the featured room, or the two sections show the same bed. */
+const HERO_PHOTO = "photo-1611892440504-42a792e24d32";
+/* Dark and warm, so it sits on the ink band instead of punching a white
+   hole in it. Checked against the other candidates before picking. */
+const PROMO_PHOTO = "photo-1414235077428-338989a2e8c0";
 
 export default async function HomePage() {
   const [settings, rooms] = await Promise.all([getSettings(), getRooms()]);
@@ -20,29 +45,29 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ---------------------------------------------------------- hero */}
-      <section className="mx-auto max-w-7xl px-5 pb-8 pt-12 lg:px-10 lg:pb-16 lg:pt-20">
-        <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.02fr] lg:gap-16">
-          <div>
-            <Eyebrow className="text-leaf">{settings.heroEyebrow}</Eyebrow>
+      {/* ═══════════════════════════════════════════════════════ hero
+          5/7 split, not 6/6. The plate runs off the right edge. */}
+      <section className="mx-auto max-w-[95rem] px-5 pt-14 lg:pl-12 lg:pr-0 lg:pt-24">
+        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-5">
+            <Eyebrow className="text-gold-deep">{settings.heroEyebrow}</Eyebrow>
 
-            <h1 className="display mt-7 text-[clamp(2.9rem,7.4vw,5.4rem)] leading-[0.97] text-bone">
+            {/* the headline hangs left of its own column */}
+            <h1 className="display mt-8 text-[clamp(2.7rem,4.8vw,4.15rem)] leading-[0.98] text-ink lg:-ml-1">
               {settings.heroHeadline}
-              <em className="block font-normal not-italic">
-                <span className="italic text-leaf">{settings.heroHeadlineItalic}</span>
-              </em>
+              <em className="block font-normal italic text-gold-deep">{settings.heroHeadlineItalic}</em>
             </h1>
 
-            <p className="mt-8 max-w-md text-[1.02rem] leading-[1.7] text-bone-dim">{settings.heroBody}</p>
+            <p className="mt-9 max-w-md text-[1.02rem] leading-[1.8] text-ink-2">{settings.heroBody}</p>
 
-            <div className="mt-9 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+            <div className="mt-10 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
               <PillLink href="/rooms#request">Request a room</PillLink>
               <PillLink href="/restaurant" variant="ghost">
                 See the menu
               </PillLink>
             </div>
 
-            <dl className="tooled-t mt-11 grid grid-cols-3 gap-x-6 gap-y-5 pt-7 sm:flex sm:flex-wrap sm:gap-x-10">
+            <dl className="foil-t mt-14 grid grid-cols-3 gap-x-6 gap-y-5 pt-8 lg:pr-10">
               {[
                 { v: "24/7", k: "Front desk" },
                 { v: "00:00", k: "Kitchen closes" },
@@ -50,8 +75,8 @@ export default async function HomePage() {
               ].map((f) => (
                 <div key={f.k}>
                   <dt className="sr-only">{f.k}</dt>
-                  <dd className="tabular display text-2xl text-leaf">{f.v}</dd>
-                  <dd className="mt-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-bone-dim">
+                  <dd className="tabular display text-[1.75rem] leading-none text-ink">{f.v}</dd>
+                  <dd className="mt-2 text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-ink-3">
                     {f.k}
                   </dd>
                 </div>
@@ -59,28 +84,30 @@ export default async function HomePage() {
             </dl>
           </div>
 
-          <div className="relative pb-16 lg:pb-0">
-            <div className="plate aspect-4/5 overflow-hidden lg:aspect-4/4.1">
+          <div className="relative pb-20 lg:col-span-7 lg:pb-0">
+            <div className="aspect-4/5 overflow-hidden rounded-l-sm border border-ink/12 lg:aspect-16/12">
               <Plate
-                src={imageUrl(featured?.image ?? null, 1100)}
-                alt={`${featured?.name ?? "Room"} at Bliss Urban`}
-                seed={featured?.name ?? "bliss"}
+                src={picture(settings.heroImage, HERO_PHOTO, 1400)}
+                alt="Inside Bliss Urban Hotels & Suites, Barnawa"
+                seed="bliss-hero"
                 priority
               />
             </div>
 
-            {/* the reference's overlapping card, here as a rate plate */}
+            {/* the rate card sits half off the plate, onto the paper */}
             {cheapest ? (
               <Link
                 href="/rooms"
-                className="plate group absolute bottom-0 left-0 flex w-[min(20rem,88%)] items-center gap-4 p-4 transition hover:border-leaf/45 lg:-left-8"
+                className="plate group absolute bottom-0 left-0 flex w-[min(21rem,90%)] items-center gap-5 p-5 transition hover:border-ink/35 lg:-left-16 lg:bottom-12"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-leaf/80">
+                  <p className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-gold-deep">
                     Rooms from
                   </p>
-                  <p className="tabular display mt-1.5 text-2xl text-bone">{naira(cheapest.price)}</p>
-                  <p className="mt-1 truncate text-xs text-bone-dim">{cheapest.name}, per night</p>
+                  <p className="tabular display mt-2 text-[1.9rem] leading-none text-ink">
+                    {naira(cheapest.price)}
+                  </p>
+                  <p className="mt-2 truncate text-xs text-ink-3">{cheapest.name}, per night</p>
                 </div>
                 <Eyelet />
               </Link>
@@ -89,43 +116,49 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* --------------------------------------------------- trust strip */}
-      <section className="tooled-t tooled-b bg-hide-2/70">
-        <div className="mx-auto grid max-w-7xl gap-x-10 gap-y-8 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-10">
-          {settings.amenities.slice(0, 4).map((a) => (
-            <div key={a.title} className="flex gap-4">
-              <Icon name={a.icon} className="mt-0.5 shrink-0 text-leaf" />
+      {/* ═════════════════════════════════════════════ trust strip */}
+      <section className="mt-24 border-y border-ink/10 bg-paper-2/60">
+        <div className="mx-auto grid max-w-[95rem] gap-x-12 gap-y-9 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-12">
+          {settings.amenities.slice(0, 4).map((a, i) => (
+            <div key={a.title} className="flex gap-5">
+              <span className="tabular display pt-0.5 text-sm text-gold">{`0${i + 1}`}</span>
               <div>
-                <p className="text-sm font-semibold text-bone">{a.title}</p>
-                <p className="mt-1 text-[0.8rem] leading-relaxed text-bone-dim">{a.body}</p>
+                <Icon name={a.icon} className="text-gold-deep" />
+                <p className="mt-3 text-sm font-semibold text-ink">{a.title}</p>
+                <p className="mt-1.5 text-[0.82rem] leading-[1.7] text-ink-2">{a.body}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ------------------------------------------------ three sections */}
-      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-10 lg:py-28">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,19rem)_1fr] lg:gap-16">
+      {/* ══════════════════════════════════════════ three sections
+          Cards are staggered vertically rather than set in a row. */}
+      <section className="mx-auto max-w-[95rem] px-5 py-24 lg:px-12 lg:py-32">
+        <div className="grid gap-14 lg:grid-cols-12 lg:gap-12">
           <SectionHead
+            index="01"
             eyebrow="Three reasons to come"
             title="Sleep here, eat here,"
             italic="stay a while."
             body="The rooms are upstairs, the kitchen is on the ground floor, and the lounge runs late. You can use one without booking the others."
+            className="lg:col-span-4 lg:pt-8"
           />
 
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid gap-8 sm:grid-cols-3 lg:col-span-8 lg:gap-6">
             {SECTIONS.map((s) => (
-              <Link key={s.href} href={s.href} className="group">
-                <div className="plate aspect-16/10 overflow-hidden transition duration-300 group-hover:border-leaf/40 sm:aspect-3/4">
-                  <Plate src={null} alt={s.label} seed={s.label} />
-                </div>
-                <div className="mt-4 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="display text-lg text-bone transition group-hover:text-leaf-hi">{s.label}</p>
-                    <p className="mt-1.5 text-[0.8rem] leading-relaxed text-bone-dim">{s.note}</p>
+              <Link key={s.href} href={s.href} className={`group ${s.offset}`}>
+                {/* struck as a foil medallion: gold ring, then a hairline gap */}
+                <div className="mx-auto aspect-square w-full max-w-72 overflow-hidden rounded-full border border-gold/40 p-1.5 transition duration-300 group-hover:border-gold/80">
+                  <div className="size-full overflow-hidden rounded-full">
+                    <Plate src={unsplash(s.photo, 700)} alt={s.label} seed={s.label} />
                   </div>
-                  <Eyelet className="mt-0.5" />
+                </div>
+
+                <div className="mt-7 text-center">
+                  <p className="display text-xl text-ink">{s.label}</p>
+                  <p className="mx-auto mt-2 max-w-56 text-[0.82rem] leading-[1.7] text-ink-2">{s.note}</p>
+                  <Eyelet className="mx-auto mt-5" />
                 </div>
               </Link>
             ))}
@@ -133,111 +166,125 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* -------------------------------------------------- featured room */}
+      {/* ═══════════════════════════════════ featured room, mirrored
+          Image left and wide this time, so the page does not settle. */}
       {featured ? (
-        <section className="mx-auto max-w-7xl px-5 lg:px-10">
-          <div className="plate grid items-center gap-8 p-6 lg:grid-cols-[0.95fr_1fr_0.85fr] lg:gap-10 lg:p-10">
-            <div>
-              <Eyebrow className="text-leaf">Most booked</Eyebrow>
-              <h2 className="display mt-5 text-[clamp(1.9rem,3.4vw,2.7rem)] leading-[1.08] text-bone">
-                The room most people
-                <em className="block font-normal italic text-leaf">come back to.</em>
-              </h2>
-              <p className="mt-5 text-sm leading-relaxed text-bone-dim">{featured.description}</p>
-            </div>
-
-            <div className="aspect-4/3 overflow-hidden rounded-plate border border-leaf/12 lg:aspect-square">
+        <section className="mx-auto max-w-[95rem] px-5 lg:pl-0 lg:pr-12">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+            <div className="aspect-4/3 overflow-hidden rounded-r-sm border border-ink/12 lg:col-span-7 lg:aspect-16/11">
               <Plate
-                src={imageUrl(featured.image, 900)}
+                src={picture(featured.image, featured.photo, 1200)}
                 alt={featured.name}
                 seed={`${featured.name}-feature`}
               />
             </div>
 
-            <div>
-              <p className="display text-2xl text-bone">{featured.name}</p>
-              <p className="tabular display mt-2 text-3xl text-leaf">{naira(featured.price)}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-bone-dim">per night</p>
+            <div className="lg:col-span-5">
+              <div className="flex items-baseline gap-5">
+                <span className="tabular display text-sm text-gold">02</span>
+                <Eyebrow className="text-gold-deep">Most booked</Eyebrow>
+              </div>
 
-              <ul className="tooled-t mt-6 space-y-2.5 pt-5 text-sm text-bone-dim">
-                {featured.amenities.slice(0, 5).map((a) => (
-                  <li key={a} className="flex items-center gap-2.5">
-                    <span className="size-1 shrink-0 rotate-45 bg-leaf" />
-                    {a}
-                  </li>
-                ))}
-              </ul>
+              <h2 className="display mt-6 text-[clamp(2.1rem,4.4vw,3.2rem)] leading-[1.03] text-ink">
+                The room most people
+                <em className="block font-normal italic text-gold-deep">come back to.</em>
+              </h2>
 
-              <PillLink href="/rooms#request" className="mt-7 w-full">
+              <p className="mt-6 max-w-md text-[0.95rem] leading-[1.8] text-ink-2">{featured.description}</p>
+
+              <div className="foil-t mt-9 flex flex-wrap items-end justify-between gap-6 pt-7">
+                <div>
+                  <p className="display text-xl text-ink">{featured.name}</p>
+                  <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+                    {featured.amenities.slice(0, 4).map((a) => (
+                      <li key={a} className="flex items-center gap-2 text-xs text-ink-2">
+                        <span className="size-1 shrink-0 rotate-45 bg-gold" />
+                        {a}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="text-right">
+                  <p className="tabular display text-[2.4rem] leading-none text-ink">{naira(featured.price)}</p>
+                  <p className="mt-2 text-[0.6rem] uppercase tracking-[0.18em] text-ink-3">per night</p>
+                </div>
+              </div>
+
+              <PillLink href="/rooms#request" className="mt-8">
                 Request this room
+                <ArrowRight />
               </PillLink>
             </div>
           </div>
         </section>
       ) : null}
 
-      {/* ------------------------------------------------------ gold band */}
-      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-10 lg:py-28">
-        <div className="leaf-field grid items-center gap-8 overflow-hidden rounded-plate p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-14">
-          <div>
-            <p className="flex items-center gap-2.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-hide/70">
+      {/* ══════════════════════════════════════════════ the ink band */}
+      <section className="on-ink mt-24 lg:mt-32">
+        <div className="mx-auto grid max-w-[95rem] items-center gap-12 px-5 py-20 lg:grid-cols-12 lg:gap-14 lg:py-24 lg:pl-12 lg:pr-0">
+          <div className="lg:col-span-6">
+            <p className="flex items-center gap-2.5 text-[0.64rem] font-semibold uppercase tracking-[0.24em] text-gold-bright">
               {settings.promoEyebrow}
             </p>
-            <h2 className="display mt-5 text-[clamp(2rem,4vw,3.2rem)] leading-[1.03] text-hide">
+            <h2 className="display mt-6 text-[clamp(2.2rem,4.6vw,3.6rem)] leading-[1.02] text-ink">
               {settings.promoHeading}
             </h2>
-            <p className="mt-5 max-w-md text-[0.95rem] leading-relaxed text-hide/80">{settings.promoBody}</p>
-            <PillLink href={settings.promoCtaHref} variant="onLeaf" className="mt-8">
+            <p className="mt-7 max-w-md text-[0.98rem] leading-[1.8] text-ink-2">{settings.promoBody}</p>
+            <PillLink href={settings.promoCtaHref} variant="onInk" className="mt-10">
               {settings.promoCtaLabel}
               <ArrowRight />
             </PillLink>
           </div>
 
-          <div className="aspect-5/4 overflow-hidden rounded-plate border border-hide/25 bg-hide/90">
-            <Plate src={null} alt="A tray from the kitchen" seed="room service tray" />
+          <div className="aspect-5/4 overflow-hidden rounded-l-sm border border-ink/15 lg:col-span-6 lg:aspect-4/3">
+            <Plate src={unsplash(PROMO_PHOTO, 900)} alt="A tray from the kitchen" seed="room service tray" />
           </div>
         </div>
       </section>
 
-      {/* ------------------------------------------------------ amenities */}
-      <section className="mx-auto max-w-7xl px-5 pb-8 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,19rem)_1fr] lg:gap-16">
+      {/* ══════════════════════════════════════ amenities, reversed */}
+      <section className="mx-auto max-w-[95rem] px-5 py-24 lg:px-12 lg:py-32">
+        <div className="grid gap-14 lg:grid-cols-12 lg:gap-12">
+          <div className="grid gap-x-12 gap-y-11 sm:grid-cols-2 lg:col-span-7 lg:order-1 lg:grid-cols-2">
+            {settings.amenities.map((a) => (
+              <div key={a.title}>
+                <Icon name={a.icon} className="text-gold-deep" />
+                <h3 className="mt-4 text-sm font-semibold text-ink">{a.title}</h3>
+                <p className="mt-2 text-[0.85rem] leading-[1.75] text-ink-2">{a.body}</p>
+              </div>
+            ))}
+          </div>
+
           <SectionHead
+            index="03"
             eyebrow="What you get"
             title="The things people"
             italic="actually ask about."
             body="Every question the front desk fields twice a day, answered before you call."
+            className="lg:order-2 lg:col-span-5 lg:pl-10 lg:pt-6"
           />
-          <div className="grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
-            {settings.amenities.map((a) => (
-              <div key={a.title}>
-                <Icon name={a.icon} className="text-leaf" />
-                <h3 className="mt-4 text-sm font-semibold text-bone">{a.title}</h3>
-                <p className="mt-2 text-[0.82rem] leading-relaxed text-bone-dim">{a.body}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
-      {/* ----------------------------------------------------- closing CTA */}
-      <section className="mx-auto max-w-7xl px-5 pt-20 lg:px-10 lg:pt-28">
-        <div className="plate grid items-center gap-8 overflow-hidden p-8 lg:grid-cols-[1fr_auto] lg:p-14">
-          <div>
-            <Eyebrow className="text-leaf">Find us</Eyebrow>
-            <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.9rem)] leading-[1.05] text-bone">
+      {/* ═══════════════════════════════════════════════ find us */}
+      <section className="mx-auto max-w-[95rem] px-5 lg:px-12">
+        <div className="plate-sunk grid items-center gap-10 p-9 lg:grid-cols-12 lg:p-16">
+          <div className="lg:col-span-7">
+            <Eyebrow className="text-gold-deep">Find us</Eyebrow>
+            <h2 className="display mt-6 text-[clamp(1.9rem,3.6vw,2.8rem)] leading-[1.06] text-ink">
               {settings.address.split(",")[0]},
-              <em className="block font-normal italic text-leaf">
+              <em className="block font-normal italic text-gold-deep">
                 {settings.address.split(",").slice(1).join(",").trim() || "Kaduna"}
               </em>
             </h2>
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-bone-dim">{settings.hours}</p>
+            <p className="mt-6 text-sm leading-[1.7] text-ink-2">{settings.hours}</p>
           </div>
-          <div className="flex flex-wrap gap-3">
+
+          <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
             <PillLink href="/rooms#request">Request a room</PillLink>
             <a
               href={`tel:${settings.phone.replace(/\s/g, "")}`}
-              className="press inline-flex items-center justify-center rounded-full border border-leaf/40 px-6 py-3.5 text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-leaf hover:bg-leaf/10"
+              className="press inline-flex items-center justify-center rounded-full border border-ink/25 px-7 py-3.5 text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink hover:border-ink/60 hover:bg-paper"
             >
               Call the desk
             </a>
@@ -252,8 +299,15 @@ export default async function HomePage() {
             "@context": "https://schema.org",
             "@type": "Hotel",
             name: "Bliss Urban Hotels & Suites",
-            address: { "@type": "PostalAddress", addressLocality: "Barnawa", addressRegion: "Kaduna", addressCountry: "NG" },
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: "No 3 Kashim Ibrahim Street, Narayi High Cost",
+              addressLocality: "Barnawa, Kaduna",
+              addressRegion: "Kaduna",
+              addressCountry: "NG",
+            },
             telephone: settings.phone,
+            email: settings.email,
           }),
         }}
       />

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-/* The knot is the mark that opens every section: two rotated squares
-   interlaced, taken from the geometric relief on northern compound walls. */
+/* The mark that opens every section: two interlaced squares, the geometry
+   that runs through northern Nigerian relief and textile work. */
 export function Knot({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 12 12" aria-hidden className={`size-2.5 shrink-0 ${className}`}>
@@ -25,23 +25,22 @@ export function Eyebrow({ children, className = "" }: { children: ReactNode; cla
   );
 }
 
-const pill = (variant: "solid" | "ghost" | "onLeaf") =>
+const pill = (variant: "solid" | "ghost" | "onInk") =>
   [
-    "press inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5",
-    "text-[0.82rem] font-semibold uppercase tracking-[0.12em] whitespace-nowrap",
-    variant === "solid" &&
-      "leaf-field text-hide shadow-[0_2px_0_var(--color-leaf-lo)] hover:brightness-110 active:shadow-none",
+    "press inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5",
+    "text-[0.78rem] font-semibold uppercase tracking-[0.14em] whitespace-nowrap",
+    variant === "solid" && "bg-ink text-paper shadow-[0_2px_0_var(--color-gold)] hover:bg-ink-2 active:shadow-none",
     variant === "ghost" &&
-      "border border-leaf/40 text-leaf shadow-[0_2px_0_rgba(122,92,28,0.55)] hover:border-leaf hover:bg-leaf/10 active:shadow-none",
-    variant === "onLeaf" &&
-      "bg-hide text-leaf shadow-[0_2px_0_rgba(0,0,0,0.45)] hover:bg-hide-2 active:shadow-none",
+      "border border-ink/25 text-ink shadow-[0_2px_0_color-mix(in_srgb,var(--color-gold)_45%,transparent)] hover:border-ink/60 hover:bg-paper-2 active:shadow-none",
+    variant === "onInk" &&
+      "foil-fill shadow-[0_2px_0_rgba(0,0,0,0.5)] hover:brightness-105 active:shadow-none",
   ]
     .filter(Boolean)
     .join(" ");
 
 type PillProps = {
   children: ReactNode;
-  variant?: "solid" | "ghost" | "onLeaf";
+  variant?: "solid" | "ghost" | "onInk";
   className?: string;
 };
 
@@ -60,7 +59,7 @@ export function PillButton({
   ...rest
 }: PillProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button className={`${pill(variant)} disabled:opacity-50 ${className}`} {...rest}>
+    <button className={`${pill(variant)} disabled:opacity-45 ${className}`} {...rest}>
       {children}
     </button>
   );
@@ -74,11 +73,11 @@ export function ArrowRight({ className = "" }: { className?: string }) {
   );
 }
 
-/* A metal eyelet set into the hide. Turns gold when its card is hovered. */
+/** A struck foil disc. Fills on hover of its parent card. */
 export function Eyelet({ className = "" }: { className?: string }) {
   return (
     <span
-      className={`grid size-10 shrink-0 place-items-center rounded-full border border-leaf/45 bg-hide/70 text-leaf transition duration-200 group-hover:border-leaf group-hover:bg-leaf group-hover:text-hide ${className}`}
+      className={`grid size-11 shrink-0 place-items-center rounded-full border border-gold/50 text-gold-deep transition duration-200 group-hover:border-ink group-hover:bg-ink group-hover:text-paper ${className}`}
     >
       <ArrowRight />
     </span>
@@ -87,43 +86,58 @@ export function Eyelet({ className = "" }: { className?: string }) {
 
 export function Tag({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-leaf/30 px-2.5 py-0.5 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-leaf/85">
+    <span className="rounded-full border border-gold/45 px-2.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-gold-deep">
       {children}
     </span>
   );
 }
 
-/** The reference's repeating rhythm: heading block left, content right. */
+/**
+ * Section opener. Deliberately off-axis: the index sits out in the margin and
+ * the heading hangs left of the content it introduces.
+ */
 export function SectionHead({
+  index,
   eyebrow,
   title,
   italic,
   href,
   linkLabel,
   body,
+  className = "",
 }: {
+  index?: string;
   eyebrow: string;
   title: string;
   italic?: string;
   href?: string;
   linkLabel?: string;
   body?: string;
+  className?: string;
 }) {
   return (
-    <div className="lg:max-w-sm">
-      <Eyebrow className="text-leaf">{eyebrow}</Eyebrow>
-      <h2 className="display mt-5 text-[clamp(2rem,4.2vw,3.1rem)] leading-[1.06] text-bone">
+    <div className={className}>
+      <div className="flex items-baseline gap-5">
+        {index ? (
+          <span className="tabular display text-sm text-gold">{index}</span>
+        ) : null}
+        <Eyebrow className="text-gold-deep">{eyebrow}</Eyebrow>
+      </div>
+
+      <h2 className="display mt-6 text-[clamp(2.1rem,4.6vw,3.4rem)] leading-[1.02] text-ink">
         {title}
-        {italic ? <em className="block font-normal italic text-leaf">{italic}</em> : null}
+        {italic ? <em className="block font-normal italic text-gold-deep">{italic}</em> : null}
       </h2>
-      {body ? <p className="mt-5 max-w-prose text-[0.95rem] leading-relaxed text-bone-dim">{body}</p> : null}
+
+      {body ? <p className="mt-6 max-w-sm text-[0.95rem] leading-[1.75] text-ink-2">{body}</p> : null}
+
       {href && linkLabel ? (
         <Link
           href={href}
-          className="group mt-7 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.14em] text-leaf"
+          className="group mt-8 inline-flex items-center gap-3 text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink"
         >
-          <span className="border-b border-leaf/40 pb-1 transition group-hover:border-leaf">{linkLabel}</span>
-          <ArrowRight className="transition group-hover:translate-x-1" />
+          <span className="border-b border-gold pb-1 transition group-hover:border-ink">{linkLabel}</span>
+          <ArrowRight className="text-gold-deep transition group-hover:translate-x-1" />
         </Link>
       ) : null}
     </div>
@@ -146,7 +160,7 @@ export function Icon({ name, className = "" }: { name: string; className?: strin
       aria-hidden
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.3"
+      strokeWidth="1.25"
       className={`size-6 ${className}`}
     >
       {ICONS[name] ?? ICONS.key}

@@ -11,6 +11,10 @@ export type Room = {
   amenities: string[];
   description: string;
   image: SanityImage;
+  images?: SanityImage[];
+  /** Unsplash ids, used only until real photography exists. */
+  photo?: string;
+  gallery?: string[];
   featured?: boolean;
   available: boolean;
 };
@@ -33,6 +37,8 @@ export type Amenity = { title: string; body: string; icon: string };
 
 export type SiteSettings = {
   phone: string;
+  phoneAlt?: string;
+  email: string;
   whatsapp: string;
   address: string;
   hours: string;
@@ -40,6 +46,7 @@ export type SiteSettings = {
   heroHeadline: string;
   heroHeadlineItalic: string;
   heroBody: string;
+  heroImage: SanityImage;
   amenities: Amenity[];
   promoEyebrow: string;
   promoHeading: string;

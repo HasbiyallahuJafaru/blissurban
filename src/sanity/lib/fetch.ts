@@ -6,7 +6,7 @@ import type { MenuItem, Room, SiteSettings } from "./types";
 export const isDemo = !sanityReady;
 
 const ROOM = `{_id, name, "slug": slug.current, price, capacity, size, bed,
-  amenities, description, image, featured, available}`;
+  amenities, description, image, images, featured, available}`;
 
 const ITEM = `{_id, name, price, description, category, section, tags, image, available}`;
 

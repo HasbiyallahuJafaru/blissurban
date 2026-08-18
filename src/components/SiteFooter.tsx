@@ -8,7 +8,6 @@ const COLUMNS = [
     links: [
       { href: "/rooms", label: "All rooms" },
       { href: "/rooms#request", label: "Request a booking" },
-      { href: "/rooms", label: "Rates" },
     ],
   },
   {
@@ -16,43 +15,44 @@ const COLUMNS = [
     links: [
       { href: "/restaurant", label: "Restaurant menu" },
       { href: "/restaurant", label: "Room service" },
-      { href: "/restaurant", label: "Breakfast" },
     ],
   },
   {
     title: "Drink",
     links: [
       { href: "/lounge", label: "Lounge menu" },
-      { href: "/lounge", label: "Cocktails" },
       { href: "/lounge", label: "Shisha" },
     ],
   },
 ];
 
 export function SiteFooter({ settings }: { settings: SiteSettings }) {
+  const tel = (n: string) => `tel:${n.replace(/\s/g, "")}`;
+
   return (
-    <footer className="mt-24 border-t border-leaf/15 bg-hide-2">
-      <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 lg:grid-cols-[1.4fr_repeat(3,1fr)_1.2fr] lg:px-10">
+    <footer className="on-ink mt-28">
+      {/* uneven columns: the mark takes nearly half, the rest crowds right */}
+      <div className="mx-auto grid max-w-[95rem] gap-14 px-5 py-20 lg:grid-cols-[1.7fr_0.7fr_0.7fr_0.7fr_1.4fr] lg:px-12">
         <div>
-          <p className="display text-2xl text-bone">Bliss Urban</p>
-          <p className="mt-1.5 border-t border-leaf/30 pt-1.5 text-[0.55rem] font-semibold uppercase tracking-[0.34em] text-leaf/80">
+          <p className="display text-3xl text-ink">Bliss Urban</p>
+          <p className="mt-2 border-t border-gold-bright/50 pt-2 text-[0.55rem] font-semibold uppercase tracking-[0.32em] text-gold-bright">
             Hotels &amp; Suites
           </p>
-          <p className="mt-6 max-w-xs text-sm leading-relaxed text-bone-dim">
+          <p className="mt-8 max-w-xs text-sm leading-[1.8] text-ink-2">
             A business hotel in Barnawa with its own kitchen, its own lounge, and power that stays on.
           </p>
         </div>
 
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <h3 className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-leaf">
+            <h3 className="flex items-center gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-gold-bright">
               <Knot />
               {col.title}
             </h3>
-            <ul className="mt-5 space-y-3">
+            <ul className="mt-6 space-y-3">
               {col.links.map((l, i) => (
                 <li key={i}>
-                  <Link href={l.href} className="text-sm text-bone-dim transition hover:text-bone">
+                  <Link href={l.href} className="text-sm text-ink-2 transition hover:text-ink">
                     {l.label}
                   </Link>
                 </li>
@@ -62,31 +62,42 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
         ))}
 
         <div>
-          <h3 className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-leaf">
+          <h3 className="flex items-center gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-gold-bright">
             <Knot />
             Front desk
           </h3>
-          <address className="mt-5 space-y-3 text-sm not-italic leading-relaxed text-bone-dim">
-            <p className="whitespace-pre-line">{settings.address}</p>
-            <p>
-              <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="tabular text-bone hover:text-leaf">
+          <address className="mt-6 space-y-3 text-sm not-italic leading-[1.7] text-ink-2">
+            <p>{settings.address}</p>
+            <p className="tabular flex flex-wrap gap-x-3 text-ink">
+              <a href={tel(settings.phone)} className="hover:text-gold-bright">
                 {settings.phone}
               </a>
+              {settings.phoneAlt ? (
+                <a href={tel(settings.phoneAlt)} className="hover:text-gold-bright">
+                  {settings.phoneAlt}
+                </a>
+              ) : null}
             </p>
-            <p className="text-xs">{settings.hours}</p>
+            <p>
+              <a href={`mailto:${settings.email}`} className="text-ink hover:text-gold-bright">
+                {settings.email}
+              </a>
+            </p>
+            <p className="text-xs text-ink-3">{settings.hours}</p>
           </address>
+
           <a
             href={`https://wa.me/${settings.whatsapp}`}
-            className="press mt-6 inline-flex items-center gap-2 rounded-full border border-leaf/35 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-leaf hover:bg-leaf/10"
+            className="press mt-7 inline-flex items-center gap-2 rounded-full border border-gold-bright/50 px-5 py-2.5 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-gold-bright hover:bg-gold-bright hover:text-on-gold"
           >
             WhatsApp us
           </a>
         </div>
       </div>
 
-      <div className="border-t border-leaf/12">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-bone-dim lg:px-10">
-          <p>© {new Date().getFullYear()} Bliss Urban Hotels &amp; Suites, Barnawa, Kaduna.</p>
+      <div className="border-t border-ink/12">
+        <div className="mx-auto flex max-w-[95rem] flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-ink-3 lg:px-12">
+          <p>© {new Date().getFullYear()} Bliss Urban Hotels &amp; Suites Ltd, Barnawa, Kaduna.</p>
           <p>Bookings and orders are confirmed by a person, not automatically.</p>
         </div>
       </div>

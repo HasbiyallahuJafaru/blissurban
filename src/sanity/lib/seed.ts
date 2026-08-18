@@ -2,22 +2,28 @@
  * Fallback content, used only while NEXT_PUBLIC_SANITY_PROJECT_ID is unset.
  * It exists so the site is browsable before the client has a Sanity project.
  *
- * Everything here is demo material. Rates, dishes and phone numbers are
- * plausible for Barnawa but none of them came from the hotel. The site shows
- * a "demo content" ribbon whenever this file is in use.
+ * Real, supplied by the hotel: the address, both phone numbers, the email, and
+ * the whole restaurant menu with its prices.
+ *
+ * Still placeholder: room types and nightly rates, the entire lounge list, and
+ * every photograph (Unsplash stand-ins, not this building). The site shows a
+ * ribbon saying so while this file is in use.
  */
 import type { MenuItem, Room, SiteSettings } from "./types";
 
 export const seedSettings: SiteSettings = {
-  phone: "+234 000 000 0000",
-  whatsapp: "2340000000000",
-  address: "Barnawa, Kaduna, Nigeria",
+  phone: "0706 122 3394",
+  phoneAlt: "0701 797 2043",
+  email: "blissurbanhotel@gmail.com",
+  whatsapp: "2347061223394",
+  address: "No 3 Kashim Ibrahim Street, Narayi High Cost, Barnawa, Kaduna",
   hours: "Front desk 24 hours · Kitchen 07:00 to 00:00",
   heroEyebrow: "Barnawa, Kaduna",
   heroHeadline: "The power never",
   heroHeadlineItalic: "goes off.",
   heroBody:
     "Twenty-four hour power, a gated compound, and a kitchen that stays open late. Book a room, order dinner, or hold a table in the lounge. Every request reaches the front desk within seconds.",
+  heroImage: null,
   amenities: [
     {
       icon: "power",
@@ -61,6 +67,8 @@ export const seedSettings: SiteSettings = {
 export const seedRooms: Room[] = [
   {
     _id: "room-standard",
+    photo: "photo-1631049307264-da0ec9d70304",
+    gallery: ["photo-1631049552057-403cdb8f0658", "photo-1596394516093-501ba68a0ba6", "photo-1584132967334-10e028bd69f7"],
     name: "Standard Room",
     slug: "standard-room",
     price: 38000,
@@ -75,6 +83,8 @@ export const seedRooms: Room[] = [
   },
   {
     _id: "room-executive",
+    photo: "photo-1590490360182-c33d57733427",
+    gallery: ["photo-1618773928121-c32242e63f39", "photo-1578683010236-d716f9a3f461", "photo-1595576508898-0ad5c879a061"],
     name: "Executive Room",
     slug: "executive-room",
     price: 55000,
@@ -90,6 +100,8 @@ export const seedRooms: Room[] = [
   },
   {
     _id: "room-deluxe",
+    photo: "photo-1611892440504-42a792e24d32",
+    gallery: ["photo-1560448204-e02f11c3d0e2", "photo-1571003123894-1f0594d2b5d9", "photo-1566665797739-1674de7a421a"],
     name: "Deluxe Suite",
     slug: "deluxe-suite",
     price: 85000,
@@ -104,6 +116,8 @@ export const seedRooms: Room[] = [
   },
   {
     _id: "room-business",
+    photo: "photo-1566073771259-6a8506099945",
+    gallery: ["photo-1522708323590-d24dbb6b0267", "photo-1587985064135-0366536eab42", "photo-1551882547-ff40c63fe5fa"],
     name: "Business Suite",
     slug: "business-suite",
     price: 120000,
@@ -155,31 +169,28 @@ const drink = (
 });
 
 export const seedMenu: MenuItem[] = [
-  food("Masa & Miyan Taushe", 3500, "Breakfast", "Rice cakes with pumpkin and groundnut soup."),
-  food("Akara & Pap", 2500, "Breakfast", "Bean fritters with fermented corn pudding."),
-  food("Full English", 6500, "Breakfast", "Eggs, sausage, beans, toast and tea."),
+  // --- The hotel's actual menu, as supplied. Names and prices verbatim. ---
+  food("Chicken Pepper Soup", 5000, "Nigerian Special Soup"),
+  food("Cat Fish Pepper Soup", 5000, "Nigerian Special Soup"),
+  food("Catfish Pepper Soup (Full)", 10000, "Nigerian Special Soup", "Whole fish."),
+  food("Pepper Crocker Fish", 4000, "Nigerian Special Soup"),
+  food("Goat Meat Pepper Soup", 4000, "Nigerian Special Soup"),
+  food("Kayan Chiki Pepper Soup", 5000, "Nigerian Special Soup", "Assorted offal."),
+  food("Cow Tail Pepper Soup", 5000, "Nigerian Special Soup"),
+  food("Pepper Chicken", 5000, "Nigerian Special Soup"),
+  food("Pepper Gizzard", 5000, "Nigerian Special Soup"),
 
-  food("Tuwo Shinkafa & Miyan Kuka", 4500, "Soups & Swallow", "Rice pudding with baobab leaf soup and beef.", ["Chef's pick"]),
-  food("Miyan Taushe & Semo", 4800, "Soups & Swallow", "Pumpkin and groundnut soup with semolina."),
-  food("Egusi & Pounded Yam", 5500, "Soups & Swallow", "Melon seed soup with assorted meat."),
-  food("Dan Wake", 3000, "Soups & Swallow", "Bean flour dumplings, oiled and peppered.", ["Vegetarian"]),
+  food("Spaghetti", 2000, "Others"),
+  food("Serve with Goat / Beef Meat", 4000, "Others"),
+  food("Serve with Cat Fish or Crocker Fish", 4000, "Others"),
+  food("Serve with Sardine or Chicken", 5000, "Others"),
+  food("Chinese Rice with Chicken", 6000, "Others"),
+  food("Basmatic Rice Serve with Goat or Beef", 3000, "Others"),
+  food("Basmatic Rice Serve with Chicken", 3000, "Others"),
+  food("Rice & Vegetable Sauce", 5000, "Others"),
+  food("Rice with Cat Fish Pepper Soup", 3000, "Others"),
 
-  food("Jollof Rice & Chicken", 5500, "Rice & Grills", "Smoky jollof, grilled quarter chicken, plantain."),
-  food("Fried Rice & Beef", 5500, "Rice & Grills", "Vegetable fried rice with peppered beef."),
-  food("Suya Platter", 7500, "Rice & Grills", "Beef suya off the charcoal, onions and yaji.", ["Spicy", "Chef's pick"]),
-  food("Grilled Tilapia", 9500, "Rice & Grills", "Whole fish, pepper sauce, fried yam."),
-
-  food("Chicken Shawarma", 4000, "Continental", "Grilled chicken, garlic sauce, flatbread."),
-  food("Beef Burger & Chips", 6000, "Continental", "Quarter-pounder with cheese and hand-cut chips."),
-  food("Spaghetti Bolognese", 5000, "Continental", "Slow beef ragu, parmesan."),
-
-  food("Kilishi", 3000, "Sides", "Dried spiced beef, sold by the wrap."),
-  food("Fried Plantain", 1500, "Sides"),
-  food("Hand-Cut Chips", 2000, "Sides"),
-
-  food("Fruit Platter", 3000, "Desserts", "Whatever the market had that morning."),
-  food("Chin Chin", 1500, "Desserts", "Fried, sweet, and sold by the bowl."),
-
+  // --- Lounge list not yet supplied by the hotel. Placeholder. ---
   drink("Kaduna Sunset", 6500, "Cocktails", "Gin, zobo syrup, lime, bitters.", ["House"]),
   drink("Old Fashioned", 7000, "Cocktails", "Bourbon, sugar, orange oil."),
   drink("Chapman", 4000, "Cocktails", "Fanta, Sprite, blackcurrant, cucumber."),
@@ -205,6 +216,6 @@ export const seedMenu: MenuItem[] = [
 
 /** Category order per section. Anything not listed sorts to the end. */
 export const categoryOrder: Record<string, string[]> = {
-  restaurant: ["Breakfast", "Soups & Swallow", "Rice & Grills", "Continental", "Sides", "Desserts"],
+  restaurant: ["Nigerian Special Soup", "Others"],
   lounge: ["Cocktails", "Mocktails & Zobo", "Beer & Cider", "Spirits", "Wine", "Shisha"],
 };

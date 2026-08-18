@@ -1,81 +1,91 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   Bliss Urban — gold-blocked leather
-   Gold is a material here, not a tint. Rules are tooled (debossed:
-   dark on the top edge, foil-lit on the bottom). Panels are bound
-   plates. The ground is tanned hide, never flat black.
+   Bliss Urban — gold dust on black
+
+   Black ground, warm white type, gold as a struck material rather than
+   a tint. The ground is never flat: soft gold dust clouds sit under a
+   sparse field of gold specks and white droplets (see components/Dust).
+   Layout stays deliberately off-axis.
+
+   Naming note: `paper` is the ground and `ink` is the type. On this
+   dark build that means paper is black and ink is warm white, so a
+   light button reads `bg-ink text-paper`.
    ------------------------------------------------------------------ */
 
 @theme {
-  --color-hide: #0b0907;
-  --color-hide-2: #13100b;
-  --color-hide-3: #1c1710;
-  --color-hide-4: #2a2318;
+  --color-paper: #0a090c;
+  --color-paper-2: #121016;
+  --color-paper-3: #1a171f;
+  --color-paper-4: #241f2a;
 
-  --color-leaf: #d8b24c;
-  --color-leaf-hi: #f6e3ac;
-  --color-leaf-lo: #7a5c1c;
-  --color-brass: #b98a3c;
+  --color-ink: #f4efe4;
+  --color-ink-2: #b8ae9e;
+  --color-ink-3: #8a8073;
 
-  --color-bone: #f0e8d9;
-  --color-bone-dim: #a4977f;
+  --color-gold: #c9a227;
+  /* Small gold text: brighter than the rules, since it sits on black. */
+  --color-gold-deep: #d8b54a;
+  --color-gold-bright: #e8cf7a;
+  --color-gold-pale: #f0e0b0;
+
+  /* Never flips. Text that sits on a gold fill. */
+  --color-on-gold: #14110d;
 
   --font-sans: var(--font-archivo), system-ui, sans-serif;
 
-  --radius-plate: 1.25rem;
+  --radius-plate: 0.25rem;
 
-  --ease-tool: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-press: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Grain. One layer, no network request, sits above the ground and
-   below everything else. This is what stops the page reading as #000. */
 @layer base {
   body {
-    background-color: var(--color-hide);
-    color: var(--color-bone);
+    background-color: var(--color-paper);
+    /* Soft gold dust clouds. These scroll with the page (no fixed
+       attachment) so the whole background moves as one with the dust. */
+    background-image:
+      radial-gradient(900px 620px at 12% 4%, rgba(201, 162, 39, 0.1), transparent 62%),
+      radial-gradient(760px 520px at 88% 22%, rgba(201, 162, 39, 0.07), transparent 62%),
+      radial-gradient(880px 640px at 40% 55%, rgba(201, 162, 39, 0.05), transparent 62%),
+      radial-gradient(820px 600px at 78% 84%, rgba(201, 162, 39, 0.055), transparent 62%);
+    color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Fine grain over the ground, scrolling with it. */
   body::before {
     content: "";
-    position: fixed;
+    position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.5;
+    opacity: 0.35;
     mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.28'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.3'/%3E%3C/svg%3E");
   }
 
-  /* Bodoni's hairlines vanish on a dark ground at display sizes, so the
-     optical size is pinned low, where the strokes are sturdiest. */
   .display {
     font-family: var(--font-bodoni), Georgia, serif;
     font-optical-sizing: none;
+    /* Bodoni's hairlines thin out on black, so the optical size is pinned
+       low where the strokes are sturdiest. */
     font-variation-settings: "opsz" 16;
     letter-spacing: -0.015em;
   }
 
-  /* On the gold field the ground carries the contrast, so the hairlines
-     can come back up. */
-  .leaf-field .display {
-    font-variation-settings: "opsz" 48;
-  }
-
   :focus-visible {
-    outline: 2px solid var(--color-leaf);
+    outline: 2px solid var(--color-gold-deep);
     outline-offset: 3px;
-    border-radius: 2px;
+    border-radius: 1px;
   }
 
   ::selection {
-    background: var(--color-leaf);
-    color: var(--color-hide);
+    background: var(--color-gold);
+    color: var(--color-on-gold);
   }
 
-  /* Prices, quantities and totals read as measured values. */
   .tabular {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
@@ -83,66 +93,64 @@
 }
 
 @layer components {
-  /* A tooled line: pressed into the hide, so it is dark above and
-     catches foil below. Every rule on this site is one of these. */
-  .tooled-t {
-    border-top: 1px solid color-mix(in srgb, var(--color-leaf) 22%, transparent);
-    box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.6);
+  /* Struck foil rule, lit along its lower edge. */
+  .foil-t {
+    border-top: 1px solid color-mix(in srgb, var(--color-gold) 60%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-gold-pale) 14%, transparent);
   }
-  .tooled-b {
-    border-bottom: 1px solid rgb(0 0 0 / 0.6);
-    box-shadow: 0 1px 0 color-mix(in srgb, var(--color-leaf) 18%, transparent);
+  .foil-b {
+    border-bottom: 1px solid color-mix(in srgb, var(--color-gold) 50%, transparent);
+  }
+  .rule-ink {
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
   }
 
-  /* A bound plate: raised leather panel with a tooled border. */
+  /* A raised plate, lifted just off the black. */
   .plate {
-    background: linear-gradient(
-      180deg,
-      var(--color-hide-3) 0%,
-      var(--color-hide-2) 100%
-    );
-    border: 1px solid color-mix(in srgb, var(--color-leaf) 16%, transparent);
+    background: linear-gradient(180deg, var(--color-paper-3) 0%, var(--color-paper-2) 100%);
+    border: 1px solid color-mix(in srgb, var(--color-gold) 20%, transparent);
     border-radius: var(--radius-plate);
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--color-leaf-hi) 10%, transparent),
-      0 1px 2px rgb(0 0 0 / 0.8),
-      0 12px 32px -12px rgb(0 0 0 / 0.9);
+      inset 0 1px 0 color-mix(in srgb, var(--color-gold-pale) 9%, transparent),
+      0 14px 36px -16px rgb(0 0 0 / 0.9);
   }
 
-  /* The gold field. Leaf is uneven, so it gets its own grain. */
-  .leaf-field {
-    position: relative;
-    isolation: isolate;
-    color: var(--color-hide);
+  .plate-sunk {
+    background: var(--color-paper-2);
+    border: 1px solid color-mix(in srgb, var(--color-gold) 14%, transparent);
+    border-radius: var(--radius-plate);
+    box-shadow: inset 0 2px 10px rgb(0 0 0 / 0.55);
+  }
+
+  /* The one raised band per page. Deeper than the ground, not lighter. */
+  .on-ink {
+    background-color: #050409;
+    color: var(--color-ink);
+  }
+
+  /* Real foil catches light across its face. */
+  .foil-fill {
     background: linear-gradient(
-      135deg,
-      var(--color-brass) 0%,
-      var(--color-leaf) 28%,
-      var(--color-leaf-hi) 50%,
-      var(--color-leaf) 72%,
-      var(--color-brass) 100%
+      104deg,
+      #8a6a1e 0%,
+      var(--color-gold) 26%,
+      #e0c76a 40%,
+      var(--color-gold-pale) 50%,
+      var(--color-gold) 72%,
+      #8a6a1e 100%
     );
-  }
-  .leaf-field::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    mix-blend-mode: multiply;
-    opacity: 0.16;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23f)'/%3E%3C/svg%3E");
+    color: var(--color-on-gold);
   }
 
-  /* Controls press and travel — the button sits on a foil edge that
-     collapses when you push it down. */
   .press {
     transition:
-      transform 90ms var(--ease-tool),
-      box-shadow 90ms var(--ease-tool),
-      background-color 160ms var(--ease-tool);
+      transform 90ms var(--ease-press),
+      box-shadow 90ms var(--ease-press),
+      background-color 160ms var(--ease-press),
+      color 160ms var(--ease-press);
   }
   .press:active {
-    transform: translateY(2px);
+    transform: translateY(1px);
   }
 }
 

@@ -17,6 +17,7 @@ export default async function LoungePage() {
     <MenuSection
       section="lounge"
       items={items}
+      heroPhoto="photo-1544148103-0773bf10d330"
       eyebrow="Open until late"
       title="Somewhere to sit"
       italic="after the meetings."
