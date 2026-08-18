@@ -60,15 +60,24 @@ npx tsc --noEmit    # typecheck
 
 ## Setting up Sanity
 
-1. Create a project at [sanity.io/manage](https://sanity.io/manage), dataset `production`.
-2. Put the project id in `.env.local` as `NEXT_PUBLIC_SANITY_PROJECT_ID`.
-3. Restart the dev server and open `/studio`.
-4. Add rooms and menu items. Create one **Site Settings** document for contact
-   details, hero copy and amenities.
+```bash
+npx sanity login
+npx sanity projects create "Bliss Urban" --dataset production --dataset-visibility public --json
+```
 
-To make published edits appear immediately, add a webhook in Sanity
-(API → Webhooks) pointing at `https://your-domain/api/revalidate`, method POST,
-with the same secret you set as `SANITY_REVALIDATE_SECRET`.
+Put the returned project id in `.env.local` as `NEXT_PUBLIC_SANITY_PROJECT_ID`,
+restart the dev server, and open `/studio`. Add rooms and menu items, and create
+the one **Site Settings** document for contact details, hero copy and amenities.
+
+The dataset has to be public: the client uses `useCdn: true` with no read token,
+so a private dataset returns nothing and the site quietly falls back to seed
+content.
+
+There is no separate Studio deploy. Schemas live in `src/sanity/schemaTypes/`
+and ship with the app.
+
+Full setup, including CORS, the revalidation webhook and Vercel environment
+variables, is in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Setting up Telegram
 

@@ -23,7 +23,7 @@ link, because there is no Telegram token yet.
 | Room types, descriptions, nightly rates | Hotel | Only placeholders exist |
 | Lounge and drinks list with prices | Hotel | Never supplied; current list is invented |
 | Photographs of the building, rooms, food | Hotel | Currently Unsplash photos **of other hotels** |
-| Sanity project | You | Free tier is enough |
+| Sanity project, dataset, CORS, webhook | You | Free tier; all scriptable, see step 1 |
 | Telegram bot, group, three topics | You | Free |
 | Domain | You | Optional; a `.vercel.app` URL works |
 
@@ -34,14 +34,52 @@ already in the code.
 
 ## 1. Sanity project
 
-1. Go to [sanity.io/manage](https://sanity.io/manage), create a project.
-2. Create a dataset named `production`.
-3. Set the dataset to **public**. The client runs with `useCdn: true` and no
-   read token, so a private dataset returns nothing and every page silently
-   falls back to seed content.
-4. Copy the project ID.
+All of this can be done from the CLI. `sanity.cli.ts` in the repo root points
+the CLI at the project, and it reads `.env.local`, so once the project ID is in
+that file no command needs `-p` again.
 
-Generate a webhook secret now, any random string:
+```bash
+npx sanity login
+
+# Creates the project and its production dataset in one call.
+npx sanity projects create "Bliss Urban" \
+  --dataset production \
+  --dataset-visibility public \
+  --json
+```
+
+The `--json` output includes the project ID. Put it in `.env.local` straight
+away so every later command picks it up:
+
+```bash
+cat >> .env.local <<'EOF'
+NEXT_PUBLIC_SANITY_PROJECT_ID=paste-the-id-here
+NEXT_PUBLIC_SANITY_DATASET=production
+NEXT_PUBLIC_SANITY_API_VERSION=2026-03-01
+EOF
+```
+
+Confirm it worked:
+
+```bash
+npx sanity projects list
+npx sanity datasets list
+```
+
+**The dataset must be public.** The client runs with `useCdn: true` and no read
+token, so a private dataset returns nothing and every page silently falls back
+to seed content, which looks like the site is simply ignoring your edits. If
+you created it private by mistake:
+
+```bash
+npx sanity datasets visibility set production public
+```
+
+There is no separate Studio to deploy. The schemas live in
+`src/sanity/schemaTypes/` and ship with the Next app, so `/studio` updates
+whenever you deploy to Vercel. Do not run `sanity deploy`.
+
+Generate the webhook secret now, any random string:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
@@ -164,24 +202,43 @@ vercel env pull .env.local
 ## 5. Connect Sanity to the deployed site
 
 **CORS.** The Studio is served from your own domain at `/studio`, so Sanity has
-to allow it. In sanity.io/manage, open API, then CORS Origins, and add:
+to allow that origin. `--credentials` is the part people miss: without it the
+page loads and then login fails.
 
-- `https://your-project.vercel.app` with **Allow credentials** ticked
-- your custom domain, also with credentials
-- `http://localhost:3000` with credentials, for local work
+```bash
+npx sanity cors add https://your-project.vercel.app --credentials
+npx sanity cors add https://blissurban.com --credentials
+npx sanity cors add http://localhost:3000 --credentials
 
-Without this, `/studio` loads and then fails to log in.
+npx sanity cors list   # check
+```
 
-**Webhook.** Still under API, create a webhook:
+Add the apex and `www` separately if you use both. Sanity matches origins
+exactly, so `https://blissurban.com` does not cover `https://www.blissurban.com`.
 
-| Field | Value |
+**Webhook.** `sanity hooks create` takes no flags and prompts for each field.
+Give these answers:
+
+| Prompt | Answer |
 |---|---|
+| Name | `Revalidate site` |
 | URL | `https://your-domain/api/revalidate` |
 | Dataset | `production` |
 | Trigger on | Create, Update, Delete |
 | Filter | `_type in ["siteSettings", "room", "menuItem"]` |
+| Projection | leave empty |
 | HTTP method | `POST` |
 | Secret | the string from step 1 |
+
+```bash
+npx sanity hooks create
+
+npx sanity hooks list    # confirm it exists
+npx sanity hooks logs    # after publishing something, check delivery
+```
+
+`hooks logs` is the fastest way to diagnose a price that will not update: it
+shows the status code and response body the route returned.
 
 The filter matches the `TAGS` map in `src/app/api/revalidate/route.ts`. A
 document type outside that list returns `{revalidated: false}` rather than an
@@ -269,6 +326,15 @@ so do not leave the site pointing at an empty dataset.
 **Every page shows seed content and the demo ribbon.**
 `NEXT_PUBLIC_SANITY_PROJECT_ID` is unset in that build, or it was set after the
 last deploy. Redeploy.
+
+**The ribbon is gone but the content is still the old placeholder text.**
+The dataset is private, so every query returns nothing and the code falls back
+to seed data without erroring. Check with `npx sanity datasets list`, and fix
+with `npx sanity datasets visibility set production public`.
+
+**A Sanity CLI command asks which project to use.** It could not read
+`sanity.cli.ts` or `.env.local`. Run it from the repo root, or pass
+`-p <project-id>` explicitly.
 
 **Studio loads but login fails.** CORS origin missing, or added without
 credentials ticked.
