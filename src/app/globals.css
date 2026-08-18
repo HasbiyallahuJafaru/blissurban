@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Bliss Urban — gold-blocked leather
+   Gold is a material here, not a tint. Rules are tooled (debossed:
+   dark on the top edge, foil-lit on the bottom). Panels are bound
+   plates. The ground is tanned hide, never flat black.
+   ------------------------------------------------------------------ */
+
+@theme {
+  --color-hide: #0b0907;
+  --color-hide-2: #13100b;
+  --color-hide-3: #1c1710;
+  --color-hide-4: #2a2318;
+
+  --color-leaf: #d8b24c;
+  --color-leaf-hi: #f6e3ac;
+  --color-leaf-lo: #7a5c1c;
+  --color-brass: #b98a3c;
+
+  --color-bone: #f0e8d9;
+  --color-bone-dim: #a4977f;
+
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+
+  --radius-plate: 1.25rem;
+
+  --ease-tool: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Grain. One layer, no network request, sits above the ground and
+   below everything else. This is what stops the page reading as #000. */
+@layer base {
+  body {
+    background-color: var(--color-hide);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.28'/%3E%3C/svg%3E");
+  }
+
+  /* Bodoni's hairlines vanish on a dark ground at display sizes, so the
+     optical size is pinned low, where the strokes are sturdiest. */
+  .display {
+    font-family: var(--font-bodoni), Georgia, serif;
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 16;
+    letter-spacing: -0.015em;
+  }
+
+  /* On the gold field the ground carries the contrast, so the hairlines
+     can come back up. */
+  .leaf-field .display {
+    font-variation-settings: "opsz" 48;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-leaf);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-leaf);
+    color: var(--color-hide);
+  }
+
+  /* Prices, quantities and totals read as measured values. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+@layer components {
+  /* A tooled line: pressed into the hide, so it is dark above and
+     catches foil below. Every rule on this site is one of these. */
+  .tooled-t {
+    border-top: 1px solid color-mix(in srgb, var(--color-leaf) 22%, transparent);
+    box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.6);
+  }
+  .tooled-b {
+    border-bottom: 1px solid rgb(0 0 0 / 0.6);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--color-leaf) 18%, transparent);
+  }
+
+  /* A bound plate: raised leather panel with a tooled border. */
+  .plate {
+    background: linear-gradient(
+      180deg,
+      var(--color-hide-3) 0%,
+      var(--color-hide-2) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--color-leaf) 16%, transparent);
+    border-radius: var(--radius-plate);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--color-leaf-hi) 10%, transparent),
+      0 1px 2px rgb(0 0 0 / 0.8),
+      0 12px 32px -12px rgb(0 0 0 / 0.9);
+  }
+
+  /* The gold field. Leaf is uneven, so it gets its own grain. */
+  .leaf-field {
+    position: relative;
+    isolation: isolate;
+    color: var(--color-hide);
+    background: linear-gradient(
+      135deg,
+      var(--color-brass) 0%,
+      var(--color-leaf) 28%,
+      var(--color-leaf-hi) 50%,
+      var(--color-leaf) 72%,
+      var(--color-brass) 100%
+    );
+  }
+  .leaf-field::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    mix-blend-mode: multiply;
+    opacity: 0.16;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23f)'/%3E%3C/svg%3E");
+  }
+
+  /* Controls press and travel — the button sits on a foil edge that
+     collapses when you push it down. */
+  .press {
+    transition:
+      transform 90ms var(--ease-tool),
+      box-shadow 90ms var(--ease-tool),
+      background-color 160ms var(--ease-tool);
+  }
+  .press:active {
+    transform: translateY(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .press:active {
+    transform: none;
+  }
+}

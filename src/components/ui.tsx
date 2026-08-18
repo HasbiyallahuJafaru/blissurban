@@ -1,0 +1,155 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+/* The knot is the mark that opens every section: two rotated squares
+   interlaced, taken from the geometric relief on northern compound walls. */
+export function Knot({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 12 12" aria-hidden className={`size-2.5 shrink-0 ${className}`}>
+      <g fill="none" stroke="currentColor" strokeWidth="1.4">
+        <rect x="1.5" y="1.5" width="9" height="9" transform="rotate(45 6 6)" />
+        <rect x="3.25" y="3.25" width="5.5" height="5.5" />
+      </g>
+    </svg>
+  );
+}
+
+export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return (
+    <p
+      className={`flex items-center gap-2.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] ${className}`}
+    >
+      <Knot />
+      {children}
+    </p>
+  );
+}
+
+const pill = (variant: "solid" | "ghost" | "onLeaf") =>
+  [
+    "press inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5",
+    "text-[0.82rem] font-semibold uppercase tracking-[0.12em] whitespace-nowrap",
+    variant === "solid" &&
+      "leaf-field text-hide shadow-[0_2px_0_var(--color-leaf-lo)] hover:brightness-110 active:shadow-none",
+    variant === "ghost" &&
+      "border border-leaf/40 text-leaf shadow-[0_2px_0_rgba(122,92,28,0.55)] hover:border-leaf hover:bg-leaf/10 active:shadow-none",
+    variant === "onLeaf" &&
+      "bg-hide text-leaf shadow-[0_2px_0_rgba(0,0,0,0.45)] hover:bg-hide-2 active:shadow-none",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+type PillProps = {
+  children: ReactNode;
+  variant?: "solid" | "ghost" | "onLeaf";
+  className?: string;
+};
+
+export function PillLink({ href, children, variant = "solid", className = "" }: PillProps & { href: string }) {
+  return (
+    <Link href={href} className={`${pill(variant)} ${className}`}>
+      {children}
+    </Link>
+  );
+}
+
+export function PillButton({
+  children,
+  variant = "solid",
+  className = "",
+  ...rest
+}: PillProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button className={`${pill(variant)} disabled:opacity-50 ${className}`} {...rest}>
+      {children}
+    </button>
+  );
+}
+
+export function ArrowRight({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={`size-4 ${className}`}>
+      <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+/* A metal eyelet set into the hide. Turns gold when its card is hovered. */
+export function Eyelet({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`grid size-10 shrink-0 place-items-center rounded-full border border-leaf/45 bg-hide/70 text-leaf transition duration-200 group-hover:border-leaf group-hover:bg-leaf group-hover:text-hide ${className}`}
+    >
+      <ArrowRight />
+    </span>
+  );
+}
+
+export function Tag({ children }: { children: ReactNode }) {
+  return (
+    <span className="rounded-full border border-leaf/30 px-2.5 py-0.5 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-leaf/85">
+      {children}
+    </span>
+  );
+}
+
+/** The reference's repeating rhythm: heading block left, content right. */
+export function SectionHead({
+  eyebrow,
+  title,
+  italic,
+  href,
+  linkLabel,
+  body,
+}: {
+  eyebrow: string;
+  title: string;
+  italic?: string;
+  href?: string;
+  linkLabel?: string;
+  body?: string;
+}) {
+  return (
+    <div className="lg:max-w-sm">
+      <Eyebrow className="text-leaf">{eyebrow}</Eyebrow>
+      <h2 className="display mt-5 text-[clamp(2rem,4.2vw,3.1rem)] leading-[1.06] text-bone">
+        {title}
+        {italic ? <em className="block font-normal italic text-leaf">{italic}</em> : null}
+      </h2>
+      {body ? <p className="mt-5 max-w-prose text-[0.95rem] leading-relaxed text-bone-dim">{body}</p> : null}
+      {href && linkLabel ? (
+        <Link
+          href={href}
+          className="group mt-7 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.14em] text-leaf"
+        >
+          <span className="border-b border-leaf/40 pb-1 transition group-hover:border-leaf">{linkLabel}</span>
+          <ArrowRight className="transition group-hover:translate-x-1" />
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
+const ICONS: Record<string, ReactNode> = {
+  power: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,
+  gate: <path d="M3 21V9l9-6 9 6v12M3 13h18M8 21V11M12 21V9.5M16 21V11" />,
+  signal: <path d="M2 8.5a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16.5a5 5 0 0 1 6 0M12 20.5h.01" />,
+  pot: <path d="M4 9h16v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9ZM2 9h20M8 5.5c0-1 1-1.5 1-2.5M12 5.5c0-1 1-1.5 1-2.5M16 5.5c0-1 1-1.5 1-2.5" />,
+  key: <path d="M15.5 3a5.5 5.5 0 1 0-4.6 8.6L3 19.5V22h3l1-2h2l1-2h2l1.5-2.6A5.5 5.5 0 0 0 15.5 3Zm1.5 4.5h.01" />,
+  broom: <path d="M14 3 8.5 12M4 21l5-9h6l-2 9H4ZM11 16h4" />,
+};
+
+export function Icon({ name, className = "" }: { name: string; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      className={`size-6 ${className}`}
+    >
+      {ICONS[name] ?? ICONS.key}
+    </svg>
+  );
+}
