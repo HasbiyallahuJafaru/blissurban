@@ -7,6 +7,7 @@ import { cartCount, useCart } from "@/lib/cart";
 import { PillLink } from "./ui";
 
 const NAV = [
+  { href: "/", label: "Home" },
   { href: "/rooms", label: "Rooms" },
   { href: "/restaurant", label: "Restaurant" },
   { href: "/lounge", label: "Lounge" },
