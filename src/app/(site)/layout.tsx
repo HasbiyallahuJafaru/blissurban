@@ -18,7 +18,7 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
 
       {isDemo ? (
         <p className="relative z-40 border-b border-ink/12 bg-paper-2 px-5 py-1.5 text-center text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-gold-deep/75">
-          Room rates and the lounge list are placeholders until Sanity is connected
+          Prices are the hotel&apos;s own. Photographs are stand-ins until Sanity is connected
         </p>
       ) : null}
 

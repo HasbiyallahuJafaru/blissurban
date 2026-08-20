@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Plate } from "@/components/Plate";
-import { ArrowRight, Eyebrow, Eyelet, Icon, PillLink, SectionHead } from "@/components/ui";
+import { ArrowRight, Eyebrow, Eyelet, Icon, PillLink, Rate, SectionHead, unitFor } from "@/components/ui";
 import { naira } from "@/lib/format";
-import { getRooms, getSettings } from "@/sanity/lib/fetch";
+import { getMenu, getRooms, getSettings } from "@/sanity/lib/fetch";
 import { picture, unsplash } from "@/sanity/lib/image";
+import { rate } from "@/sanity/lib/types";
 
 export const revalidate = 60;
 
@@ -38,16 +39,46 @@ const HERO_PHOTO = "photo-1611892440504-42a792e24d32";
    hole in it. Checked against the other candidates before picking. */
 const PROMO_PHOTO = "photo-1414235077428-338989a2e8c0";
 
+/** Lowest price in a list, or null when the list is empty. */
+const from = (prices: number[]) => (prices.length ? Math.min(...prices) : null);
+
 export default async function HomePage() {
-  const [settings, rooms] = await Promise.all([getSettings(), getRooms()]);
-  const featured = rooms.find((r) => r.featured) ?? rooms[1] ?? rooms[0];
-  const cheapest = rooms.reduce((a, b) => (b.price < a.price ? b : a), rooms[0]);
+  const [settings, rooms, laundry, routes] = await Promise.all([
+    getSettings(),
+    getRooms(),
+    getMenu("laundry"),
+    getMenu("transport"),
+  ]);
+
+  const bedrooms = rooms.filter((r) => r.kind !== "hall");
+  const featured = bedrooms.find((r) => r.featured) ?? bedrooms[1] ?? bedrooms[0];
+  const cheapest = bedrooms.reduce<(typeof bedrooms)[number] | undefined>(
+    (a, b) => (!a || rate(b) < rate(a) ? b : a),
+    undefined,
+  );
+
+  const SERVICES = [
+    {
+      href: "/laundry",
+      icon: "broom",
+      label: "Laundry",
+      note: "Washing, ironing and starching, priced by the piece. Leave the bag, give your room number.",
+      from: from(laundry.map((i) => i.price)),
+    },
+    {
+      href: "/car-hire",
+      icon: "key",
+      label: "Car hire",
+      note: "Fixed fares to the airport, Zaria, Kano and Abuja. No room booking needed.",
+      from: from(routes.map((i) => i.price)),
+    },
+  ];
 
   return (
     <>
       {/* ═══════════════════════════════════════════════════════ hero
           5/7 split, not 6/6. The plate runs off the right edge. */}
-      <section className="mx-auto max-w-[95rem] px-5 pt-14 lg:pl-12 lg:pr-0 lg:pt-24">
+      <section className="mx-auto max-w-380 px-5 pt-14 lg:pl-12 lg:pr-0 lg:pt-24">
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5">
             <Eyebrow className="text-gold-deep">{settings.heroEyebrow}</Eyebrow>
@@ -71,7 +102,7 @@ export default async function HomePage() {
               {[
                 { v: "24/7", k: "Front desk" },
                 { v: "00:00", k: "Kitchen closes" },
-                { v: `${rooms.length}`, k: "Room types" },
+                { v: `${bedrooms.length}`, k: "Room types" },
               ].map((f) => (
                 <div key={f.k}>
                   <dt className="sr-only">{f.k}</dt>
@@ -105,9 +136,11 @@ export default async function HomePage() {
                     Rooms from
                   </p>
                   <p className="tabular display mt-2 text-[1.9rem] leading-none text-ink">
-                    {naira(cheapest.price)}
+                    {naira(rate(cheapest))}
                   </p>
-                  <p className="mt-2 truncate text-xs text-ink-3">{cheapest.name}, per night</p>
+                  <p className="mt-2 truncate text-xs text-ink-3">
+                    {cheapest.name}, {unitFor(cheapest)}
+                  </p>
                 </div>
                 <Eyelet />
               </Link>
@@ -118,7 +151,7 @@ export default async function HomePage() {
 
       {/* ═════════════════════════════════════════════ trust strip */}
       <section className="mt-24 border-y border-ink/10 bg-paper-2/60">
-        <div className="mx-auto grid max-w-[95rem] gap-x-12 gap-y-9 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-12">
+        <div className="mx-auto grid max-w-380 gap-x-12 gap-y-9 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-12">
           {settings.amenities.slice(0, 4).map((a, i) => (
             <div key={a.title} className="flex gap-5">
               <span className="tabular display pt-0.5 text-sm text-gold">{`0${i + 1}`}</span>
@@ -134,7 +167,7 @@ export default async function HomePage() {
 
       {/* ══════════════════════════════════════════ three sections
           Cards are staggered vertically rather than set in a row. */}
-      <section className="mx-auto max-w-[95rem] px-5 py-24 lg:px-12 lg:py-32">
+      <section className="mx-auto max-w-380 px-5 py-24 lg:px-12 lg:py-32">
         <div className="grid gap-14 lg:grid-cols-12 lg:gap-12">
           <SectionHead
             index="01"
@@ -169,7 +202,7 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════ featured room, mirrored
           Image left and wide this time, so the page does not settle. */}
       {featured ? (
-        <section className="mx-auto max-w-[95rem] px-5 lg:pl-0 lg:pr-12">
+        <section className="mx-auto max-w-380 px-5 lg:pl-0 lg:pr-12">
           <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
             <div className="aspect-4/3 overflow-hidden rounded-r-sm border border-ink/12 lg:col-span-7 lg:aspect-16/11">
               <Plate
@@ -205,8 +238,7 @@ export default async function HomePage() {
                   </ul>
                 </div>
                 <div className="text-right">
-                  <p className="tabular display text-[2.4rem] leading-none text-ink">{naira(featured.price)}</p>
-                  <p className="mt-2 text-[0.6rem] uppercase tracking-[0.18em] text-ink-3">per night</p>
+                  <Rate room={featured} className="text-[2.4rem] text-ink" unit={unitFor(featured)} />
                 </div>
               </div>
 
@@ -219,9 +251,36 @@ export default async function HomePage() {
         </section>
       ) : null}
 
+      {/* ════════════════════════════════════ laundry and car hire
+          Two services that are not a room, a plate or a drink, so they sit
+          apart from the three medallions rather than crowding into them. */}
+      <section className="mx-auto max-w-380 px-5 pt-24 lg:px-12 lg:pt-32">
+        <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
+          {SERVICES.map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              className="plate group flex items-start gap-6 p-8 transition hover:border-ink/35 lg:p-10"
+            >
+              <div className="min-w-0 flex-1">
+                <Icon name={s.icon} className="text-gold-deep" />
+                <p className="display mt-4 text-2xl text-ink">{s.label}</p>
+                <p className="mt-2.5 max-w-sm text-[0.88rem] leading-[1.7] text-ink-2">{s.note}</p>
+                {s.from !== null ? (
+                  <p className="tabular mt-5 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-deep">
+                    From {naira(s.from)}
+                  </p>
+                ) : null}
+              </div>
+              <Eyelet className="mt-1" />
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* ══════════════════════════════════════════════ the ink band */}
       <section className="on-ink mt-24 lg:mt-32">
-        <div className="mx-auto grid max-w-[95rem] items-center gap-12 px-5 py-20 lg:grid-cols-12 lg:gap-14 lg:py-24 lg:pl-12 lg:pr-0">
+        <div className="mx-auto grid max-w-380 items-center gap-12 px-5 py-20 lg:grid-cols-12 lg:gap-14 lg:py-24 lg:pl-12 lg:pr-0">
           <div className="lg:col-span-6">
             <p className="flex items-center gap-2.5 text-[0.64rem] font-semibold uppercase tracking-[0.24em] text-gold-bright">
               {settings.promoEyebrow}
@@ -243,7 +302,7 @@ export default async function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════ amenities, reversed */}
-      <section className="mx-auto max-w-[95rem] px-5 py-24 lg:px-12 lg:py-32">
+      <section className="mx-auto max-w-380 px-5 py-24 lg:px-12 lg:py-32">
         <div className="grid gap-14 lg:grid-cols-12 lg:gap-12">
           <div className="grid gap-x-12 gap-y-11 sm:grid-cols-2 lg:col-span-7 lg:order-1 lg:grid-cols-2">
             {settings.amenities.map((a) => (
@@ -267,7 +326,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════ find us */}
-      <section className="mx-auto max-w-[95rem] px-5 lg:px-12">
+      <section className="mx-auto max-w-380 px-5 lg:px-12">
         <div className="plate-sunk grid items-center gap-10 p-9 lg:grid-cols-12 lg:p-16">
           <div className="lg:col-span-7">
             <Eyebrow className="text-gold-deep">Find us</Eyebrow>

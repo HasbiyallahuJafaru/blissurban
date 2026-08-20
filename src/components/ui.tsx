@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { naira } from "@/lib/format";
+import { isReduced, rate, type Room } from "@/sanity/lib/types";
 
 /* The mark that opens every section: two interlaced squares, the geometry
    that runs through northern Nigerian relief and textile work. */
@@ -83,6 +85,35 @@ export function Eyelet({ className = "" }: { className?: string }) {
     </span>
   );
 }
+
+/**
+ * What the guest pays, with the tariff sheet's standard rate struck through
+ * beside it when the hotel is discounting. The strike is sized in `em` so it
+ * tracks whatever type size the caller sets.
+ */
+export function Rate({ room, className = "", unit }: { room: Room; className?: string; unit?: string }) {
+  return (
+    <>
+      <p className={`tabular display leading-none ${className}`}>
+        {naira(rate(room))}
+        {isReduced(room) ? (
+          <>
+            <span className="ml-2.5 align-middle text-[0.48em] font-normal text-ink-3 line-through decoration-gold/70 decoration-1">
+              {naira(room.price)}
+            </span>
+            <span className="sr-only">, reduced from {naira(room.price)}</span>
+          </>
+        ) : null}
+      </p>
+      {unit ? (
+        <p className="mt-2 text-[0.6rem] uppercase tracking-[0.18em] text-ink-3">{unit}</p>
+      ) : null}
+    </>
+  );
+}
+
+/** Halls are hired by the day, rooms by the night. */
+export const unitFor = (room: Room) => (room.kind === "hall" ? "per day" : "per night");
 
 export function Tag({ children }: { children: ReactNode }) {
   return (

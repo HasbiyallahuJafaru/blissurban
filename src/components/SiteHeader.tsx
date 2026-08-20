@@ -11,6 +11,8 @@ const NAV = [
   { href: "/rooms", label: "Rooms" },
   { href: "/restaurant", label: "Restaurant" },
   { href: "/lounge", label: "Lounge" },
+  { href: "/laundry", label: "Laundry" },
+  { href: "/car-hire", label: "Car hire" },
 ];
 
 function Wordmark({ onClick }: { onClick?: () => void }) {
@@ -73,10 +75,12 @@ export function SiteHeader() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-ink/10 bg-paper/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[95rem] items-center gap-6 px-5 py-4 lg:px-12">
+        <div className="mx-auto flex max-w-380 items-center gap-6 px-5 py-4 lg:px-12">
           <Wordmark />
 
-          <nav aria-label="Sections" className="ml-14 hidden items-center gap-9 lg:flex">
+          {/* Six links now. They fit at lg only once the Reserve pill steps
+              aside, so the pill waits for xl where there is room for both. */}
+          <nav aria-label="Sections" className="ml-8 hidden items-center gap-5 lg:flex xl:ml-12 xl:gap-8">
             {NAV.map((n) => (
               <Link key={n.href} href={n.href} className={link(n.href)}>
                 {n.label}
@@ -88,7 +92,7 @@ export function SiteHeader() {
             <CartLink />
             {/* PillLink sets display:inline-flex itself, so the breakpoint lives
                 on a wrapper or the two display utilities fight and lose. */}
-            <div className="hidden sm:block">
+            <div className="hidden sm:max-lg:block xl:block">
               <PillLink href="/rooms">Reserve</PillLink>
             </div>
             <button

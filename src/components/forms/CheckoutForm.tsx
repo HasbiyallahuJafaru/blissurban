@@ -12,6 +12,14 @@ const PLACE = {
   takeaway: { label: "Pickup time", placeholder: "19:30", hint: "Collect at the front desk." },
 };
 
+/* Laundry is never carried to a table or taken away, so an order made up of
+   nothing else skips the choice and just asks which room to collect from. */
+const COLLECT = {
+  label: "Room number",
+  placeholder: "204",
+  hint: "Someone comes up to collect the bag.",
+};
+
 export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
   const lines = useCart();
   const [fulfilment, setFulfilment] = useState<keyof typeof PLACE>("room");
@@ -24,6 +32,9 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
   }, []);
 
   const total = cartTotal(lines);
+  const laundryOnly = lines.length > 0 && lines.every((l) => l.section === "laundry");
+  const place = laundryOnly ? COLLECT : PLACE[fulfilment];
+  const mode = laundryOnly ? "room" : fulfilment;
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,16 +42,16 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
     const get = (k: string) => String(data.get(k) ?? "");
 
     setFallback(
-      `Hello Bliss Urban, I would like to order:\n${lines
+      `Hello Bliss Urban, I would like to ${laundryOnly ? "send out laundry" : "order"}:\n${lines
         .map((l) => `${l.qty} x ${l.name}`)
-        .join("\n")}\nTotal ${naira(total)}\n${PLACE[fulfilment].label}: ${get("place")}\nName: ${get("name")}, ${get("phone")}`,
+        .join("\n")}\nTotal ${naira(total)}\n${place.label}: ${get("place")}\nName: ${get("name")}, ${get("phone")}`,
     );
 
     setState({ status: "sending" });
     const result = await postNotify({
       type: "order",
       lines: lines.map((l) => ({ id: l.id, qty: l.qty })),
-      fulfilment,
+      fulfilment: mode,
       place: get("place"),
       name: get("name"),
       phone: get("phone"),
@@ -76,19 +87,20 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
       <div className="plate p-10 text-center">
         <p className="display text-2xl text-ink">Nothing in your order yet</p>
         <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-ink-2">
-          Add something from the kitchen or the bar and it will show up here.
+          Add something from the kitchen, the bar or the laundry and it will show up here.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <PillLink href="/restaurant">Restaurant menu</PillLink>
           <PillLink href="/lounge" variant="ghost">
             Lounge menu
           </PillLink>
+          <PillLink href="/laundry" variant="ghost">
+            Laundry list
+          </PillLink>
         </div>
       </div>
     );
   }
-
-  const place = PLACE[fulfilment];
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_0.85fr] lg:gap-12">
@@ -136,35 +148,42 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
           <span className="tabular display text-3xl text-gold-deep">{naira(total)}</span>
         </div>
         <p className="mt-3 text-xs leading-relaxed text-ink-2">
-          Prices are confirmed by the kitchen when they see the order. You pay on delivery or at the desk.
+          {laundryOnly
+            ? "Pieces are counted at the desk when the bag is collected, and the total is confirmed then."
+            : "Prices are confirmed by the kitchen when they see the order."}{" "}
+          You pay on delivery or at the desk.
         </p>
       </div>
 
       {/* ---------------------------------------------------------- details */}
       <form onSubmit={onSubmit} className="plate relative h-fit p-6 lg:p-8">
         <Honeypot />
-        <h2 className="display text-xl text-ink">Where is it going?</h2>
+        <h2 className="display text-xl text-ink">
+          {laundryOnly ? "Where do we collect it?" : "Where is it going?"}
+        </h2>
 
-        <div
-          role="radiogroup"
-          aria-label="Where is it going?"
-          className="mt-5 grid grid-cols-3 gap-1 rounded-full border border-ink/20 p-1"
-        >
-          {(Object.keys(PLACE) as Array<keyof typeof PLACE>).map((key) => (
-            <button
-              key={key}
-              type="button"
-              role="radio"
-              aria-checked={fulfilment === key}
-              onClick={() => setFulfilment(key)}
-              className={`press rounded-full py-2.5 text-[0.66rem] font-bold uppercase tracking-[0.1em] ${
-                fulfilment === key ? "foil-fill text-paper" : "text-ink-2 hover:text-ink"
-              }`}
-            >
-              {key === "room" ? "My room" : key === "table" ? "A table" : "Takeaway"}
-            </button>
-          ))}
-        </div>
+        {laundryOnly ? null : (
+          <div
+            role="radiogroup"
+            aria-label="Where is it going?"
+            className="mt-5 grid grid-cols-3 gap-1 rounded-full border border-ink/20 p-1"
+          >
+            {(Object.keys(PLACE) as Array<keyof typeof PLACE>).map((key) => (
+              <button
+                key={key}
+                type="button"
+                role="radio"
+                aria-checked={fulfilment === key}
+                onClick={() => setFulfilment(key)}
+                className={`press rounded-full py-2.5 text-[0.66rem] font-bold uppercase tracking-widest ${
+                  fulfilment === key ? "foil-fill text-paper" : "text-ink-2 hover:text-ink"
+                }`}
+              >
+                {key === "room" ? "My room" : key === "table" ? "A table" : "Takeaway"}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="mt-6 grid gap-5">
           <Field label={place.label} hint={place.hint}>
@@ -191,17 +210,23 @@ export function CheckoutForm({ whatsapp }: { whatsapp: string }) {
               className="tabular"
             />
           </Field>
-          <Field label="Anything else" hint="No pepper, extra ice, allergies.">
+          <Field
+            label="Anything else"
+            hint={laundryOnly ? "Starch the shirts, do not tumble dry." : "No pepper, extra ice, allergies."}
+          >
             <Textarea name="note" rows={3} maxLength={500} />
           </Field>
         </div>
 
         <PillButton type="submit" disabled={state.status === "sending"} className="mt-7 w-full">
-          {state.status === "sending" ? "Sending" : `Send order, ${naira(total)}`}
+          {state.status === "sending"
+            ? "Sending"
+            : `${laundryOnly ? "Send request" : "Send order"}, ${naira(total)}`}
         </PillButton>
 
         <p className="mt-4 text-center text-xs leading-relaxed text-ink-2">
-          No payment here. The order goes straight to the kitchen and you settle in person.
+          No payment here. It goes straight to the {laundryOnly ? "laundry" : "kitchen"} and you settle in
+          person.
         </p>
       </form>
     </div>

@@ -9,7 +9,19 @@ const TOPIC = {
   reservation: process.env.TELEGRAM_TOPIC_RESERVATIONS,
   restaurant: process.env.TELEGRAM_TOPIC_RESTAURANT,
   lounge: process.env.TELEGRAM_TOPIC_LOUNGE,
+  laundry: process.env.TELEGRAM_TOPIC_LAUNDRY,
+  transport: process.env.TELEGRAM_TOPIC_TRANSPORT,
 };
+
+/** One thread per department, so nobody reads orders meant for someone else. */
+const DESK = {
+  restaurant: { heading: "🍲 <b>RESTAURANT ORDER</b>", topic: TOPIC.restaurant },
+  lounge: { heading: "🥂 <b>LOUNGE ORDER</b>", topic: TOPIC.lounge },
+  laundry: { heading: "🧺 <b>LAUNDRY</b>", topic: TOPIC.laundry },
+} as const;
+
+type Desk = keyof typeof DESK;
+const DESKS = Object.keys(DESK) as Desk[];
 
 const contact = {
   name: z.string().trim().min(2).max(80),
@@ -31,7 +43,8 @@ const Payload = z.discriminatedUnion("type", [
     roomId: z.string().min(1).max(120),
     checkIn: z.string().max(20),
     checkOut: z.string().max(20),
-    guests: z.number().int().min(1).max(12),
+    // Generous, because the same form books the hall as well as a room.
+    guests: z.number().int().min(1).max(1000),
     transfer: z.enum(["none", "arrival", "departure", "both"]).default("none"),
     transferPlace: z.string().trim().max(120).optional(),
     transferTime: z.string().trim().max(40).optional(),
@@ -42,6 +55,17 @@ const Payload = z.discriminatedUnion("type", [
     lines: z.array(z.object({ id: z.string().min(1).max(120), qty: z.number().int().min(1).max(50) })).min(1).max(60),
     fulfilment: z.enum(["room", "table", "takeaway"]),
     place: z.string().trim().min(1).max(40),
+    ...contact,
+  }),
+  /** Car hire booked on its own, without a room. */
+  z.object({
+    type: z.literal("transfer"),
+    routeId: z.string().min(1).max(120),
+    date: z.string().max(20),
+    time: z.string().trim().min(1).max(20),
+    trip: z.enum(["oneWay", "return"]),
+    pickup: z.string().trim().min(1).max(120),
+    passengers: z.number().int().min(1).max(12),
     ...contact,
   }),
 ]);
@@ -135,11 +159,13 @@ export async function POST(request: Request) {
             (data.transferPlace ? `\n<b>Where:</b> ${esc(data.transferPlace)}` : "") +
             (data.transferTime ? `\n<b>When:</b> ${esc(data.transferTime)}` : "");
 
+      const hall = room.kind === "hall";
+
       await sendToTelegram(
-        `🔑 <b>ROOM REQUEST</b> · ${orderRef}\n` +
-          `\n<b>${esc(room.name)}</b> — ${naira(room.price)} per night` +
-          `\n<b>Check in:</b> ${esc(data.checkIn)}` +
-          `\n<b>Check out:</b> ${esc(data.checkOut)}` +
+        `${hall ? "🏛 <b>HALL REQUEST</b>" : "🔑 <b>ROOM REQUEST</b>"} · ${orderRef}\n` +
+          `\n<b>${esc(room.name)}</b> — ${naira(room.price)} ${hall ? "per day" : "per night"}` +
+          `\n<b>${hall ? "Event date" : "Check in"}:</b> ${esc(data.checkIn)}` +
+          `\n<b>${hall ? "Until" : "Check out"}:</b> ${esc(data.checkOut)}` +
           `\n<b>Guests:</b> ${data.guests}` +
           transfer +
           who +
@@ -149,10 +175,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, ref: orderRef });
     }
 
-    // Prices come from Sanity, never from the browser.
+    if (data.type === "transfer") {
+      const route = prices.get(data.routeId);
+      if (!route || route.section !== "transport") {
+        return NextResponse.json({ ok: false, error: "That route is no longer listed." }, { status: 400 });
+      }
+
+      await sendToTelegram(
+        `🚗 <b>CAR HIRE</b> · ${orderRef}\n` +
+          `\n<b>${esc(route.name)}</b> — ${naira(route.price)}` +
+          `\n<b>Trip:</b> ${data.trip === "return" ? "Return, fare to confirm" : "One way"}` +
+          `\n<b>Pick up from:</b> ${esc(data.pickup)}` +
+          `\n<b>When:</b> ${esc(data.date)} at ${esc(data.time)}` +
+          `\n<b>Passengers:</b> ${data.passengers}` +
+          who +
+          `\n\n<i>${stamp()}</i>`,
+        TOPIC.transport,
+      );
+      return NextResponse.json({ ok: true, ref: orderRef });
+    }
+
+    // Prices come from Sanity, never from the browser. Anything that is not an
+    // orderable line is dropped here rather than trusted: a room, a car hire
+    // route, or a dish the kitchen prices on the day has no business arriving
+    // as a cart line, whatever a crafted request claims.
     const priced = data.lines.flatMap((l) => {
       const found = prices.get(l.id);
-      return found ? [{ ...found, qty: l.qty, id: l.id }] : [];
+      if (!found || found.onRequest) return [];
+      return DESKS.includes(found.section as Desk)
+        ? [{ ...found, section: found.section as Desk, qty: l.qty, id: l.id }]
+        : [];
     });
     if (priced.length === 0) {
       return NextResponse.json({ ok: false, error: "Those items are no longer available." }, { status: 400 });
@@ -165,28 +217,35 @@ export async function POST(request: Request) {
           ? `Table ${esc(data.place)}`
           : `Takeaway, pickup ${esc(data.place)}`;
 
-    // The kitchen and the bar each get only their own lines, under one reference.
-    const bySection = { restaurant: [] as typeof priced, lounge: [] as typeof priced };
+    // The kitchen, the bar and the laundry each get only their own lines,
+    // under one shared reference.
+    const bySection = new Map<Desk, typeof priced>();
     for (const line of priced) {
-      (line.section === "lounge" ? bySection.lounge : bySection.restaurant).push(line);
+      const existing = bySection.get(line.section);
+      if (existing) existing.push(line);
+      else bySection.set(line.section, [line]);
     }
 
-    const groups = (["restaurant", "lounge"] as const).filter((s) => bySection[s].length > 0);
+    const groups = DESKS.filter((s) => bySection.has(s));
 
     for (const section of groups) {
-      const lines = bySection[section];
+      const lines = bySection.get(section) ?? [];
       const total = lines.reduce((sum, l) => sum + l.price * l.qty, 0);
-      const heading = section === "lounge" ? "🥂 <b>LOUNGE ORDER</b>" : "🍲 <b>RESTAURANT ORDER</b>";
+      const { heading, topic } = DESK[section];
 
       await sendToTelegram(
         `${heading} · ${orderRef}\n\n` +
           lines.map((l) => `${l.qty} × ${esc(l.name)} — ${naira(l.price * l.qty)}`).join("\n") +
           `\n<b>Total: ${naira(total)}</b>` +
-          `\n\n<b>Deliver to:</b> ${where}` +
+          `\n\n<b>${section === "laundry" ? "Collect from" : "Deliver to"}:</b> ${where}` +
           who +
-          (groups.length > 1 ? `\n\n<i>Part of a split order, see ${orderRef} in the other thread.</i>` : "") +
+          (groups.length > 1
+            ? `\n\n<i>Part of a split order, see ${orderRef} in the other ${
+                groups.length > 2 ? "threads" : "thread"
+              }.</i>`
+            : "") +
           `\n<i>${stamp()}</i>`,
-        TOPIC[section],
+        topic,
       );
     }
 

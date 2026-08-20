@@ -1,7 +1,12 @@
 import { defineField, defineType } from "sanity";
 import { categoryOrder } from "../lib/seed";
 
-const allCategories = [...categoryOrder.restaurant, ...categoryOrder.lounge];
+const allCategories = [
+  ...categoryOrder.restaurant,
+  ...categoryOrder.lounge,
+  ...categoryOrder.laundry,
+  ...categoryOrder.transport,
+];
 
 const image = defineField({
   name: "image",
@@ -25,6 +30,7 @@ const siteSettings = defineType({
     { name: "contact", title: "Contact", default: true },
     { name: "hero", title: "Home hero" },
     { name: "amenities", title: "Amenities" },
+    { name: "policies", title: "House rules" },
     { name: "promo", title: "Promo band" },
   ],
   fields: [
@@ -69,6 +75,15 @@ const siteSettings = defineType({
       ],
     }),
 
+    defineField({
+      name: "policies",
+      title: "House rules",
+      type: "array",
+      of: [{ type: "string" }],
+      group: "policies",
+      description: "The Special Notice from the tariff sheet. Shown on the Rooms page.",
+    }),
+
     defineField({ name: "promoEyebrow", type: "string", group: "promo" }),
     defineField({ name: "promoHeading", type: "string", group: "promo" }),
     defineField({ name: "promoBody", type: "text", rows: 3, group: "promo" }),
@@ -91,10 +106,27 @@ const room = defineType({
       validation: (r) => r.required(),
     }),
     defineField({
+      name: "kind",
+      title: "Type",
+      type: "string",
+      options: { list: [{ title: "Guest room", value: "room" }, { title: "Event hall", value: "hall" }], layout: "radio" },
+      initialValue: "room",
+      description: "A hall is priced per day and shown in its own block, not the room grid.",
+    }),
+    defineField({
       name: "price",
-      title: "Price per night (₦)",
+      title: "Standard rate (₦)",
       type: "number",
       validation: (r) => r.required().min(0),
+      description: "The rack rate from the tariff sheet.",
+    }),
+    defineField({
+      name: "discountedPrice",
+      title: "Discounted rate (₦)",
+      type: "number",
+      validation: (r) => r.min(0),
+      description:
+        "What the guest actually pays. Shown as the headline price, with the standard rate struck through. Leave empty to quote the standard rate alone.",
     }),
     defineField({ name: "capacity", title: "Sleeps", type: "number", validation: (r) => r.required().min(1) }),
     defineField({ name: "size", type: "string", description: "Example: 28 m²" }),
@@ -123,9 +155,24 @@ const menuItem = defineType({
     defineField({ name: "name", type: "string", validation: (r) => r.required() }),
     defineField({ name: "price", title: "Price (₦)", type: "number", validation: (r) => r.required().min(0) }),
     defineField({
+      name: "onRequest",
+      title: "Price on request",
+      type: "boolean",
+      initialValue: false,
+      description: "Hides the price and shows “On request” instead. The item cannot be added to an order.",
+    }),
+    defineField({
       name: "section",
       type: "string",
-      options: { list: ["restaurant", "lounge"], layout: "radio" },
+      options: {
+        list: [
+          { title: "Restaurant", value: "restaurant" },
+          { title: "Lounge", value: "lounge" },
+          { title: "Laundry", value: "laundry" },
+          { title: "Car hire", value: "transport" },
+        ],
+        layout: "radio",
+      },
       validation: (r) => r.required(),
     }),
     defineField({

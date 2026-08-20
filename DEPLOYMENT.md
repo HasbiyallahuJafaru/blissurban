@@ -12,23 +12,30 @@ real Telegram group.
 
 **Works right now, with no credentials at all.** Sanity reads fall back to
 `src/sanity/lib/seed.ts`, so you can deploy today and get a working URL. A
-ribbon across the top says room rates and the lounge list are placeholders.
-Submitting a booking or order will fail gracefully to a pre-filled WhatsApp
-link, because there is no Telegram token yet.
+ribbon across the top says the photographs are stand-ins. Submitting a booking
+or order will fail gracefully to a pre-filled WhatsApp link, because there is
+no Telegram token yet.
 
 **Blocking a real launch:**
 
 | Item | Who | Notes |
 |---|---|---|
-| Room types, descriptions, nightly rates | Hotel | Only placeholders exist |
-| Lounge and drinks list with prices | Hotel | Never supplied; current list is invented |
 | Photographs of the building, rooms, food | Hotel | Currently Unsplash photos **of other hotels** |
+| Room descriptions and amenity lists | Hotel | Rates are real; the prose around them is written, not supplied |
+| Seating figure for the hall | Hotel | The tariff sheet prices it but does not seat it |
 | Sanity project, dataset, CORS, webhook | You | Free tier; all scriptable, see step 1 |
-| Telegram bot, group, three topics | You | Free |
+| Telegram bot, group, five topics | You | Free |
 | Domain | You | Optional; a `.vercel.app` URL works |
 
-The restaurant menu, address, both phone numbers and the email are real and
-already in the code.
+Everything priced is real and already in the code, taken from the hotel's own
+tariff sheet: the six room categories with both the standard and discounted
+rate, the hall, the house rules, all 90 restaurant dishes, all 91 drinks, the
+14 laundry prices and the 13 car hire fares. So are the address, both phone
+numbers and the email.
+
+Room sizes and bed types are deliberately **absent** rather than invented,
+because the tariff sheet does not give them. Add them in Studio when the hotel
+confirms them and they appear automatically.
 
 ---
 
@@ -94,7 +101,13 @@ Keep it. It goes into both Vercel and the Sanity webhook in step 5.
 1. Message [@BotFather](https://t.me/BotFather), send `/newbot`, copy the token.
 2. Create a group, open its settings and turn on **Topics**.
 3. Add the bot to the group and make it an **administrator**.
-4. Create three topics: `Reservations`, `Restaurant`, `Lounge`.
+4. Create five topics: `Reservations`, `Restaurant`, `Lounge`, `Laundry`,
+   `Car Hire`.
+
+Each department reads only its own thread. A topic id left unset is not an
+error: Telegram ignores an unknown `message_thread_id` and the message lands in
+the group's General thread instead, so you can add Laundry and Car Hire later
+without anything breaking in the meantime.
 
 **Chat ID.** Send any message in the group, then open:
 
@@ -111,7 +124,7 @@ Look for `"chat":{"id":-100...}`. It is negative and starts with `-100`.
 - Or post a message inside each topic and read `message_thread_id` from
   `getUpdates`.
 
-Write down all four numbers before moving on.
+Write down all six numbers before moving on: the chat id and five topic ids.
 
 ---
 
@@ -161,6 +174,8 @@ printf '-1001234567890'            | vercel env add TELEGRAM_CHAT_ID production
 printf '2'                         | vercel env add TELEGRAM_TOPIC_RESERVATIONS production
 printf '3'                         | vercel env add TELEGRAM_TOPIC_RESTAURANT production
 printf '4'                         | vercel env add TELEGRAM_TOPIC_LOUNGE production
+printf '5'                         | vercel env add TELEGRAM_TOPIC_LAUNDRY production
+printf '6'                         | vercel env add TELEGRAM_TOPIC_TRANSPORT production
 ```
 
 `printf` rather than `echo` on purpose: `echo` appends a newline, and a
@@ -193,9 +208,11 @@ vercel env pull .env.local
 | `SANITY_REVALIDATE_SECRET` | runtime | Verifies the publish webhook |
 | `TELEGRAM_BOT_TOKEN` | runtime | Secret. Browser must never see it |
 | `TELEGRAM_CHAT_ID` | runtime | Negative, starts `-100` |
-| `TELEGRAM_TOPIC_RESERVATIONS` | runtime | Front desk thread |
+| `TELEGRAM_TOPIC_RESERVATIONS` | runtime | Front desk thread; rooms, the hall, and transfers booked with a room |
 | `TELEGRAM_TOPIC_RESTAURANT` | runtime | Kitchen thread |
 | `TELEGRAM_TOPIC_LOUNGE` | runtime | Bar thread |
+| `TELEGRAM_TOPIC_LAUNDRY` | runtime | Laundry thread |
+| `TELEGRAM_TOPIC_TRANSPORT` | runtime | Car hire thread; rides booked without a room |
 
 ---
 
@@ -253,15 +270,29 @@ makes a price change appear in seconds instead of a minute.
 
 Open `https://your-domain/studio` and log in.
 
+Everything below is already in `seed.ts` and correct. Studio is how it gets
+edited from then on, and nothing has to be re-typed to launch.
+
 - [ ] Create the single **Site Settings** document. Fill in contact details,
-      hero copy, the amenity list, and the promo band.
-- [ ] Add the real **rooms** with correct rates, capacity, and descriptions.
-      Tick `featured` on exactly one, which is the room the home page shows.
-- [ ] Add the **lounge** menu items with `section` set to `lounge`.
-- [ ] Check the restaurant items against the printed menu. They were entered
-      from the copy you supplied and should match already.
+      hero copy, the amenity list, the house rules, and the promo band.
+- [ ] Add the **rooms**. Each takes a standard rate and, optionally, a
+      discounted rate; the discounted one becomes the headline price and the
+      standard is struck through beside it. Leave the discount empty to quote
+      one price. Tick `featured` on exactly one.
+- [ ] Set the hall's `kind` to **Event hall**. That keeps it out of the room
+      grid, prices it per day, and gives it its own block on `/rooms`.
+- [ ] Add **menu items** with `section` set to `restaurant`, `lounge`,
+      `laundry` or `transport` (car hire). All four lists were entered from the
+      tariff sheet and should match already.
+- [ ] Fill in room sizes and bed types once the hotel confirms them. They are
+      empty on purpose rather than guessed.
 - [ ] Upload real photographs. A Sanity image always beats the Unsplash
       stand-in, so the placeholders disappear on their own as you upload.
+
+**Prices on request.** Tick `onRequest` on a menu item and the site prints "On
+request" instead of a figure and refuses to let it into an order. `BBQ Fish
+with Fries or Plantain` is the one item shipped this way, because the tariff
+sheet prices it by size on the day.
 
 The demo ribbon disappears as soon as `NEXT_PUBLIC_SANITY_PROJECT_ID` is set.
 It is tied to that variable, not to whether the dataset actually has content,
@@ -274,15 +305,24 @@ so do not leave the site pointing at an empty dataset.
 **Delivery**
 
 - [ ] Send a room request. It arrives in the Reservations topic with the right
-      room, dates, guests and phone number.
+      room, dates, guests and phone number, quoting the **discounted** rate.
 - [ ] Request a transfer with the booking. A `🚗 TRANSFER` block appears with
       direction, place and time.
+- [ ] Request the hall from `/rooms`. It arrives as `🏛 HALL REQUEST`, priced
+      per day, with the date labelled as an event date.
 - [ ] Order food only. It arrives in the Restaurant topic.
 - [ ] Order drinks only. It arrives in the Lounge topic.
-- [ ] Order food and drinks together. Two messages arrive, one per topic,
-      sharing one reference like `BU-4F2A`.
+- [ ] Order laundry only. It arrives in the Laundry topic and says **Collect
+      from** rather than Deliver to. The checkout should not have offered
+      "a table" or "takeaway" for a laundry-only order.
+- [ ] Order food, drinks and laundry together. Three messages arrive, one per
+      topic, sharing one reference like `BU-4F2A`.
+- [ ] Book a car from `/car-hire` without booking a room. It arrives in the Car
+      Hire topic with route, fare, pickup point, date, time and passengers.
 - [ ] Edit a price in DevTools before submitting. The Telegram message shows
       the **Sanity** price, not the edited one.
+- [ ] Post a crafted order containing a car hire route id or a room id. It is
+      rejected rather than priced as a cart line.
 
 **Content**
 
@@ -312,9 +352,11 @@ so do not leave the site pointing at an empty dataset.
   `/rooms` rather than at a form, since the page-bottom form was removed. Each
   room card leads to the booking modal, so the path works. Worth deciding
   whether those buttons should open a specific room's modal instead.
-- **Standalone pickup.** Transfers currently only exist inside a room booking.
-  If a guest should be able to request a car without booking a room, that is a
-  separate small flow and is not built.
+- **Return fares for car hire.** The booking form offers "one way" or "return",
+  but only the one-way fare is published, so a return is sent through as
+  "Return, fare to confirm" and the desk quotes the second leg. The tariff
+  sheet already prices the airport run both ways as its own route. If the hotel
+  wants every route priced both ways, that is a data change, not a code change.
 - **Preview deployments** will post into whatever Telegram group they are
   configured with. Give preview its own group or leave its Telegram variables
   unset.

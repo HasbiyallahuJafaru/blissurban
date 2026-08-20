@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { naira } from "@/lib/format";
-import type { Room } from "@/sanity/lib/types";
-import { PillButton } from "../ui";
+import { rate, type Room } from "@/sanity/lib/types";
+import { PillButton, unitFor } from "../ui";
 import { Field, Honeypot, Input, Result, Select, Textarea, postNotify, nowMs, type Submission } from "./fields";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -19,6 +19,9 @@ const TRANSFER = {
 type TransferKey = keyof typeof TRANSFER;
 
 export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: string }) {
+  // Opened for the hall alone, the date fields mean something different, so
+  // they say so. A mixed list is always rooms.
+  const hall = rooms.length === 1 && rooms[0]?.kind === "hall";
   const [state, setState] = useState<Submission>({ status: "idle" });
   const [transfer, setTransfer] = useState<TransferKey>("none");
   const [fallback, setFallback] = useState("");
@@ -91,7 +94,7 @@ export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: 
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <Field label="Room type">
+          <Field label={hall ? "Booking" : "Room type"}>
             {/* RoomCard's modal sets this by id when someone picks a room there. */}
             <Select
               id="roomId"
@@ -101,22 +104,30 @@ export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: 
             >
               {rooms.map((r) => (
                 <option key={r._id} value={r._id}>
-                  {r.name} at {naira(r.price)} per night
+                  {r.name} at {naira(rate(r))} {unitFor(r)}
                 </option>
               ))}
             </Select>
           </Field>
         </div>
 
-        <Field label="Check in">
+        <Field label={hall ? "Event date" : "Check in"}>
           <Input type="date" name="checkIn" required min={today()} defaultValue={today()} />
         </Field>
-        <Field label="Check out">
+        <Field label={hall ? "Until" : "Check out"} hint={hall ? "Same day is fine." : undefined}>
           <Input type="date" name="checkOut" required min={today()} />
         </Field>
 
-        <Field label="Guests">
-          <Input type="number" name="guests" required min={1} max={12} defaultValue={1} className="tabular" />
+        <Field label={hall ? "Guests expected" : "Guests"}>
+          <Input
+            type="number"
+            name="guests"
+            required
+            min={1}
+            max={hall ? 1000 : 12}
+            defaultValue={hall ? 50 : 1}
+            className="tabular"
+          />
         </Field>
         <Field label="Your name">
           <Input name="name" required minLength={2} maxLength={80} autoComplete="name" placeholder="Ada Obi" />
@@ -152,7 +163,7 @@ export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: 
                   role="radio"
                   aria-checked={transfer === key}
                   onClick={() => setTransfer(key)}
-                  className={`press rounded-full border px-3 py-2.5 text-[0.66rem] font-bold uppercase tracking-[0.1em] ${
+                  className={`press rounded-full border px-3 py-2.5 text-[0.66rem] font-bold uppercase tracking-widest ${
                     transfer === key
                       ? "border-ink bg-ink text-paper"
                       : "border-ink/25 text-ink-2 hover:border-ink/60 hover:text-ink"

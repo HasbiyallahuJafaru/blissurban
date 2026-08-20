@@ -1,8 +1,9 @@
 # Bliss Urban Hotels & Suites
 
-The website for a business hotel in Barnawa, Kaduna. Guests request a room, order
-from the restaurant, or order from the lounge, and each request lands in the staff
-Telegram group within a second.
+The website for a business hotel in Barnawa, Kaduna. Guests request a room or the
+hall, order from the restaurant or the lounge, send out laundry, and book a car,
+and each request lands in the right thread of the staff Telegram group within a
+second.
 
 There is no database, no login, and no payment processor. Every submission is an
 enquiry that a person confirms.
@@ -20,12 +21,12 @@ Next.js route handler on Vercel
       |  holds TELEGRAM_BOT_TOKEN, recomputes every total from Sanity
       v
 Telegram supergroup
-   Reservations topic  |  Restaurant topic  |  Lounge topic
+   Reservations | Restaurant | Lounge | Laundry | Car Hire
 ```
 
-Content lives in Sanity. Management edits rooms, dishes, drinks and prices in a
-browser at `/studio`, and a webhook drops the affected pages so the change is live
-within seconds without a redeploy.
+Content lives in Sanity. Management edits rooms, dishes, drinks, laundry prices,
+car hire fares and the house rules in a browser at `/studio`, and a webhook drops
+the affected pages so the change is live within seconds without a redeploy.
 
 ## Stack
 
@@ -83,11 +84,12 @@ variables, is in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 1. Message [@BotFather](https://t.me/BotFather), send `/newbot`, copy the token.
 2. Create a group, turn on **Topics**, and add the bot as an administrator.
-3. Create three topics: Reservations, Restaurant, Lounge.
+3. Create five topics: Reservations, Restaurant, Lounge, Laundry, Car Hire.
 4. Send a message in the group, then open
    `https://api.telegram.org/bot<TOKEN>/getUpdates` and read `chat.id` (a negative
    number starting `-100`) and each topic's `message_thread_id`.
-5. Fill in `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` and the three topic ids.
+5. Fill in `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` and the five topic ids. A topic
+   left blank still delivers; the message just lands in the group's General thread.
 
 `TELEGRAM_BOT_TOKEN` must never be prefixed with `NEXT_PUBLIC_`. That prefix ships a
 variable to the browser, and anyone could then post to the group as the hotel.
@@ -99,18 +101,22 @@ src/
   app/
     (site)/            public pages, wrapped in the header and footer
       page.tsx         home
-      rooms/           room list and the booking request form
+      rooms/           room grid, the hall, the house rules, booking form
       restaurant/      food menu, add to order
-      lounge/          drinks and shisha, add to order
+      lounge/          drinks and spirits, add to order
+      laundry/         laundry price list, add to order
+      car-hire/        published fares plus the booking form
       cart/            checkout: where it goes, who to call
     studio/            embedded Sanity Studio, no site chrome
     api/notify/        the only code that knows the Telegram token
     api/revalidate/    Sanity publish webhook
   components/
-    ui.tsx             eyebrow, pills, eyelet, section head, icons
+    ui.tsx             eyebrow, pills, eyelet, rate, section head, icons
     Plate.tsx          image slot, with a drawn placeholder when there is no photo
-    MenuSection.tsx    shared by restaurant and lounge
-    forms/             reservation and checkout
+    MenuSection.tsx    shared by restaurant, lounge, laundry and car hire
+    RoomCard.tsx       room medallion, photo viewer, booking modal
+    HallCard.tsx       the hall, priced by the day, with its own booking modal
+    forms/             reservation, checkout and car hire
   lib/
     cart.ts            module store, localStorage, useSyncExternalStore
     format.ts          naira formatting
@@ -119,14 +125,23 @@ src/
     lib/               client, image urls, fetch with seed fallback
 ```
 
+`MenuSection` renders all four priced lists. Restaurant, lounge and laundry are
+orderable, so their rows carry an Add button and the cart bar. Car hire passes
+`orderable={false}`: a ride needs a date and a time that a cart line cannot carry,
+so the page shows the fares as a table and books through its own form.
+
 ## How orders are kept honest
 
 The browser sends item ids and quantities. It never sends prices. The route handler
 looks every id up in Sanity and recomputes the total, so editing a price in DevTools
 changes nothing that staff see.
 
-A cart holding both food and drinks sends two messages, one to the kitchen's topic
-and one to the bar's, sharing a single reference like `BU-4F2A`.
+The lookup is also what decides where a line is allowed to go. Only restaurant,
+lounge and laundry ids are orderable; a room id, a car hire route id, or an item
+priced on request is dropped rather than trusted, whatever a crafted request claims.
+
+A cart holding food, drinks and laundry sends three messages, one to each
+department's topic, sharing a single reference like `BU-4F2A`.
 
 Spam is filtered in three cheap steps before anything reaches Telegram: a hidden
 honeypot field, a minimum form-fill time, and a per-IP rate limit. A submission that
@@ -150,25 +165,38 @@ drawn foil panel if there is neither.
 
 ## What is real and what is not
 
-Real, supplied by the hotel:
+Real, taken from the hotel's own tariff sheet:
 
 - the address, both phone numbers, and the email
-- the entire restaurant menu with its prices
+- the six room categories, each with its standard and discounted rate
+- the hall, priced by the day
+- the house rules, shown in full on `/rooms`
+- all 90 restaurant dishes, all 91 drinks, 14 laundry prices, 13 car hire fares
 
 Still placeholder, and marked as such by a ribbon at the top of every page:
 
-- room types, descriptions and nightly rates
-- the whole lounge list, drinks and shisha
 - every photograph
+- room descriptions and amenity lists
+- the hall's seating figure
+
+Room sizes and bed types are **absent rather than invented**: the tariff sheet does
+not give them, so no figure is shown until the hotel supplies one.
+
+Two transcription notes. The sheet prints `Big Stoiut`, corrected here to `Big
+Stout`. Its pounded yam and semo blocks abbreviate the second half of each list to
+bare lines like `Serve with Fish`, which mean nothing away from the printed table,
+so those are spelled out in full. Prices are untouched.
 
 ## Before launch
 
 - [ ] Replace every Unsplash photo with real pictures of this building
-- [ ] Enter real room types and rates in Studio
-- [ ] Supply the lounge and drinks list
-- [ ] Set the Sanity project id, Telegram token, chat id and topic ids in Vercel
+- [ ] Confirm the room descriptions and amenity lists with the hotel
+- [ ] Add room sizes and bed types in Studio once the hotel supplies them
+- [ ] Ask the hotel how many the hall seats
+- [ ] Set the Sanity project id, Telegram token, chat id and five topic ids in Vercel
 - [ ] Point `NEXT_PUBLIC_SITE_URL` at the real domain, for the sitemap and canonical URLs
-- [ ] Send one test booking and one test order and confirm they land in the right topics
+- [ ] Send one test booking, one test order, one laundry request and one car hire
+      request, and confirm each lands in the right topic
 
 ## Accessibility
 

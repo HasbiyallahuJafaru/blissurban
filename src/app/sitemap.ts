@@ -5,7 +5,7 @@ import type { MetadataRoute } from "next";
 const base = process.env.NEXT_PUBLIC_SITE_URL || "https://blissurban.example";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return ["", "/rooms", "/restaurant", "/lounge"].map((path) => ({
+  return ["", "/rooms", "/restaurant", "/lounge", "/laundry", "/car-hire"].map((path) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
     changeFrequency: path === "" ? "weekly" : "daily",

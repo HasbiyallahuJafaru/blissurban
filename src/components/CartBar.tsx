@@ -15,7 +15,7 @@ export function CartBar() {
     <div className="on-ink sticky bottom-0 z-40 mt-16">
       <Link
         href="/cart"
-        className="mx-auto flex max-w-[95rem] items-center justify-between gap-4 px-5 py-4 lg:px-12"
+        className="mx-auto flex max-w-380 items-center justify-between gap-4 px-5 py-4 lg:px-12"
       >
         <div>
           <p className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-gold-bright">

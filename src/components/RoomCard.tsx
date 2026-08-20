@@ -1,12 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { naira } from "@/lib/format";
 import { picture, unsplash } from "@/sanity/lib/image";
 import type { Room } from "@/sanity/lib/types";
 import { Plate } from "./Plate";
 import { ReservationForm } from "./forms/ReservationForm";
-import { ArrowRight, PillButton } from "./ui";
+import { ArrowRight, PillButton, Rate, unitFor } from "./ui";
 
 const dialogClass =
   "m-0 h-dvh max-h-none w-screen max-w-none bg-paper p-0 text-ink " +
@@ -90,8 +89,9 @@ export function RoomCard({
           {room.bed ? ` · ${room.bed}` : ""}
           {room.size ? ` · ${room.size}` : ""}
         </p>
-        <p className="tabular display mt-4 text-3xl text-gold-deep">{naira(room.price)}</p>
-        <p className="text-[0.6rem] uppercase tracking-[0.18em] text-ink-3">per night</p>
+        <div className="mt-4">
+          <Rate room={room} className="text-3xl text-gold-deep" unit={unitFor(room)} />
+        </div>
 
         <button
           onClick={() => viewer.current?.showModal()}
@@ -173,8 +173,7 @@ export function RoomCard({
 
           <footer className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-t border-ink/10 bg-paper px-4 py-4 sm:px-6">
             <div>
-              <p className="tabular display text-2xl leading-none text-ink sm:text-3xl">{naira(room.price)}</p>
-              <p className="mt-1 text-[0.58rem] uppercase tracking-[0.18em] text-ink-3">per night</p>
+              <Rate room={room} className="text-2xl text-ink sm:text-3xl" unit={unitFor(room)} />
             </div>
             <PillButton onClick={openBooking} className="flex-1 sm:flex-none">
               Request this room

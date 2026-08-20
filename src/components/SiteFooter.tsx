@@ -21,7 +21,15 @@ const COLUMNS = [
     title: "Drink",
     links: [
       { href: "/lounge", label: "Lounge menu" },
-      { href: "/lounge", label: "Shisha" },
+      { href: "/lounge", label: "Wines & spirits" },
+    ],
+  },
+  {
+    title: "Services",
+    links: [
+      { href: "/laundry", label: "Laundry prices" },
+      { href: "/car-hire", label: "Car hire" },
+      { href: "/car-hire#request", label: "Airport pickup" },
     ],
   },
 ];
@@ -36,7 +44,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
 
   return (
     <footer className="on-ink mt-28">
-      <div className="mx-auto grid max-w-[95rem] gap-14 px-5 py-14 lg:grid-cols-[1.7fr_0.7fr_0.7fr_0.7fr_1.4fr] lg:px-12 lg:py-20">
+      <div className="mx-auto grid max-w-380 gap-14 px-5 py-14 lg:grid-cols-[1.5fr_0.7fr_0.7fr_0.7fr_0.8fr_1.3fr] lg:px-12 lg:py-20">
         <div className="text-center lg:text-left">
           <p className="display text-3xl text-ink">Bliss Urban</p>
           <p className="mt-2 inline-block border-t border-gold-bright/50 pt-2 text-[0.55rem] font-semibold uppercase tracking-[0.32em] text-gold-bright">
@@ -101,7 +109,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
       </div>
 
       <div className="border-t border-ink/12">
-        <div className="mx-auto flex max-w-[95rem] flex-wrap items-center justify-center gap-x-3 gap-y-2 px-5 py-6 text-center text-xs text-ink-3 lg:justify-between lg:px-12 lg:text-left">
+        <div className="mx-auto flex max-w-380 flex-wrap items-center justify-center gap-x-3 gap-y-2 px-5 py-6 text-center text-xs text-ink-3 lg:justify-between lg:px-12 lg:text-left">
           <p>© {new Date().getFullYear()} Bliss Urban Hotels &amp; Suites Ltd, Barnawa, Kaduna.</p>
           <p>Bookings and orders are confirmed by a person, not automatically.</p>
         </div>
