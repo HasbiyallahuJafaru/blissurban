@@ -10,7 +10,7 @@ import type { MenuItem } from "@/sanity/lib/types";
  */
 export function MenuRow({ item, orderable }: { item: MenuItem; orderable: boolean }) {
   return (
-    <li className="rule-ink flex items-start gap-5 py-6 first:border-t-0 first:pt-0">
+    <li className="rule-ink flex items-start gap-3 py-6 first:border-t-0 first:pt-0 sm:gap-5">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
           <h3 className="display text-[1.15rem] leading-tight text-ink">{item.name}</h3>
@@ -29,8 +29,10 @@ export function MenuRow({ item, orderable }: { item: MenuItem; orderable: boolea
         className="mt-3.5 hidden h-px flex-1 self-start border-b border-dotted border-ink/25 sm:block"
       />
 
+      {/* the price column is only pinned from sm up; on a phone those 96px
+          come off the dish name, which has nowhere else to go */}
       <p
-        className={`tabular display mt-0.5 w-24 shrink-0 text-right text-ink ${
+        className={`tabular display mt-0.5 shrink-0 text-right text-ink sm:w-24 ${
           item.onRequest ? "text-[0.8rem] leading-6 text-ink-2" : "text-[1.15rem]"
         }`}
       >
