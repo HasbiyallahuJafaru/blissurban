@@ -4,10 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { cartCount, cartTotal, useCart } from "@/lib/cart";
 import { naira, step } from "@/lib/format";
 import type { MenuItem } from "@/sanity/lib/types";
+import { Plate } from "./Plate";
 import { MenuRow } from "./MenuRow";
 import { CloseButton, Eyelet, PillButton, dialogClass } from "./ui";
 
 export type MenuGroup = { category: string; items: MenuItem[] };
+
+/**
+ * The same rhythm the home page medallions are set to. Repeats past five, so a
+ * ten-category lounge keeps the stagger instead of falling into a flat row.
+ */
+const STAGGER = ["lg:mt-0", "lg:mt-14", "lg:mt-5", "lg:mt-16", "lg:mt-7"];
 
 /** "dish" -> "dishes", "drink" -> "drinks". Enough for the nouns we use. */
 const plural = (noun: string, n: number) =>
@@ -51,24 +58,43 @@ export function MenuGroups({
 
   return (
     <>
-      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      <ul className="grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-5">
         {groups.map((g, i) => {
           const from = cheapest(g.items);
           return (
-            <li key={g.category}>
+            <li key={g.category} className={STAGGER[i % STAGGER.length]}>
               <button
                 onClick={() => setActive(g)}
-                className="plate group flex w-full items-center gap-5 p-6 text-left transition hover:border-ink/35 lg:p-7"
+                className="group block w-full text-center"
+                aria-label={`${g.category}, ${g.items.length} ${plural(noun, g.items.length)}`}
               >
-                <div className="min-w-0 flex-1">
-                  <span className="tabular text-[0.62rem] font-semibold text-gold">{step(i)}</span>
-                  <p className="display mt-2 text-[1.35rem] leading-tight text-ink">{g.category}</p>
-                  <p className="tabular mt-2.5 text-[0.7rem] uppercase tracking-[0.14em] text-ink-3">
+                {/* struck as a foil medallion, the same frame the home page and
+                    the rooms use. Plate draws its rosette from the category
+                    name, so no two courses come out alike.
+
+                    Spans rather than divs and paragraphs: a button may only
+                    hold phrasing content, and this is the pattern RoomCard
+                    already sets for a medallion you can press. */}
+                <span
+                  aria-hidden
+                  className="mx-auto block aspect-square w-full max-w-72 overflow-hidden rounded-full border border-gold/40 p-1.5 transition duration-300 group-hover:border-gold/80"
+                >
+                  <span className="block size-full overflow-hidden rounded-full">
+                    <Plate src={null} alt={g.category} seed={g.category} />
+                  </span>
+                </span>
+
+                <span className="mt-6 block">
+                  <span className="tabular block text-[0.62rem] font-semibold text-gold">{step(i)}</span>
+                  <span className="display mt-2 block text-lg leading-tight text-ink lg:text-xl">
+                    {g.category}
+                  </span>
+                  <span className="tabular mx-auto mt-2 block max-w-56 text-[0.7rem] uppercase tracking-[0.14em] text-ink-3">
                     {g.items.length} {plural(noun, g.items.length)}
                     {from !== null ? ` · from ${naira(from)}` : ""}
-                  </p>
-                </div>
-                <Eyelet />
+                  </span>
+                  <Eyelet className="mx-auto mt-4" />
+                </span>
               </button>
             </li>
           );
@@ -129,7 +155,7 @@ function ModalFooter({ onDone }: { onDone: () => void }) {
   const count = cartCount(lines);
 
   return (
-    <footer className="flex shrink-0 items-center justify-between gap-4 border-t border-ink/10 bg-paper px-4 py-4 sm:px-6">
+    <footer className="flex shrink-0 items-center justify-between gap-4 border-t border-ink/10 bg-paper/60 px-4 py-4 backdrop-blur-md sm:px-6">
       <div aria-live="polite">
         {count > 0 ? (
           <>

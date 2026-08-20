@@ -92,8 +92,13 @@ export function Eyelet({ className = "" }: { className?: string }) {
  * trap, Escape to close and the backdrop with it.
  */
 export const dialogClass =
-  "m-0 h-dvh max-h-none w-screen max-w-none bg-paper p-0 text-ink " +
-  "backdrop:bg-black/85 backdrop:backdrop-blur-sm";
+  "m-0 h-dvh max-h-none w-screen max-w-none p-0 text-ink " +
+  /* Glass, not a flat panel. The dialog sits in the top layer, so its own
+     backdrop-filter blurs the page and the ::backdrop tint behind it. The
+     tint stays light enough that the page still reads through the blur —
+     at bg-black/85 there would be nothing left to see. */
+  "bg-paper/75 backdrop-blur-2xl " +
+  "backdrop:bg-black/45 backdrop:backdrop-blur-sm";
 
 /** The round close control every dialog carries in its top right. */
 export function CloseButton({ onClick }: { onClick: () => void }) {

@@ -153,7 +153,7 @@ export function RoomCard({
             </div>
           </div>
 
-          <footer className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-t border-ink/10 bg-paper px-4 py-4 sm:px-6">
+          <footer className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-t border-ink/10 bg-paper/60 px-4 py-4 backdrop-blur-md sm:px-6">
             <div>
               <Rate room={room} className="text-2xl text-ink sm:text-3xl" unit={unitFor(room)} />
             </div>

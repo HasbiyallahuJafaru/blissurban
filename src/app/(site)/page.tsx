@@ -2,17 +2,22 @@ import Link from "next/link";
 import { Plate } from "@/components/Plate";
 import { ArrowRight, Eyebrow, Eyelet, Icon, PillLink, Rate, SectionHead, unitFor } from "@/components/ui";
 import { naira } from "@/lib/format";
-import { getMenu, getRooms, getSettings } from "@/sanity/lib/fetch";
+import { getRooms, getSettings } from "@/sanity/lib/fetch";
 import { picture, unsplash } from "@/sanity/lib/image";
 import { rate } from "@/sanity/lib/types";
 
 export const revalidate = 60;
 
+/**
+ * Everything the hotel sells, struck as one set of foil medallions. Laundry
+ * and car hire carry no `photo`: there is no honest stand-in for either, so
+ * Plate draws its rosette instead of borrowing a picture of a bedroom.
+ */
 const SECTIONS = [
   {
     href: "/rooms",
     label: "Rooms & Suites",
-    note: "Four types, from a single to a suite that seats six.",
+    note: "Six categories, from the Standard to the Classic Presidential.",
     offset: "lg:mt-0",
     photo: "photo-1582719478250-c89cae4dc85b",
   },
@@ -20,35 +25,43 @@ const SECTIONS = [
     href: "/restaurant",
     label: "Restaurant",
     note: "Pepper soups and rice, sent up to your room.",
-    offset: "lg:mt-20",
+    offset: "lg:mt-14",
     photo: "photo-1517248135467-4c7edcad34c4",
   },
   {
     href: "/lounge",
     label: "Lounge",
     note: "Somewhere to sit when the meetings are done.",
-    offset: "lg:mt-8",
+    offset: "lg:mt-5",
     photo: "photo-1514933651103-005eec06c04b",
+  },
+  {
+    href: "/laundry",
+    label: "Laundry",
+    note: "Washing, ironing and starching, priced by the piece.",
+    offset: "lg:mt-16",
+    photo: undefined,
+  },
+  {
+    href: "/car-hire",
+    label: "Car Hire",
+    note: "Fixed fares to the airport, Zaria, Kano and Abuja.",
+    offset: "lg:mt-7",
+    photo: undefined,
   },
 ];
 
 /* Stand-ins until the hotel supplies its own photography. The hero is
-   deliberately not the featured room, or the two sections show the same bed. */
-const HERO_PHOTO = "photo-1611892440504-42a792e24d32";
+   deliberately not the featured room, or the two sections show the same bed.
+   Bliss Luxury became the featured room with the tariff sheet, so this moved
+   off the id that room now carries. */
+const HERO_PHOTO = "photo-1566665797739-1674de7a421a";
 /* Dark and warm, so it sits on the ink band instead of punching a white
    hole in it. Checked against the other candidates before picking. */
 const PROMO_PHOTO = "photo-1414235077428-338989a2e8c0";
 
-/** Lowest price in a list, or null when the list is empty. */
-const from = (prices: number[]) => (prices.length ? Math.min(...prices) : null);
-
 export default async function HomePage() {
-  const [settings, rooms, laundry, routes] = await Promise.all([
-    getSettings(),
-    getRooms(),
-    getMenu("laundry"),
-    getMenu("transport"),
-  ]);
+  const [settings, rooms] = await Promise.all([getSettings(), getRooms()]);
 
   const bedrooms = rooms.filter((r) => r.kind !== "hall");
   const featured = bedrooms.find((r) => r.featured) ?? bedrooms[1] ?? bedrooms[0];
@@ -56,23 +69,6 @@ export default async function HomePage() {
     (a, b) => (!a || rate(b) < rate(a) ? b : a),
     undefined,
   );
-
-  const SERVICES = [
-    {
-      href: "/laundry",
-      icon: "broom",
-      label: "Laundry",
-      note: "Washing, ironing and starching, priced by the piece. Leave the bag, give your room number.",
-      from: from(laundry.map((i) => i.price)),
-    },
-    {
-      href: "/car-hire",
-      icon: "key",
-      label: "Car hire",
-      note: "Fixed fares to the airport, Zaria, Kano and Abuja. No room booking needed.",
-      from: from(routes.map((i) => i.price)),
-    },
-  ];
 
   return (
     <>
@@ -165,33 +161,37 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════ three sections
-          Cards are staggered vertically rather than set in a row. */}
+      {/* ═══════════════════════════════════════════ five sections
+          Medallions are staggered vertically rather than set in a row. */}
       <section className="mx-auto max-w-380 px-5 py-24 lg:px-12 lg:py-32">
-        <div className="grid gap-14 lg:grid-cols-12 lg:gap-12">
+        <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
           <SectionHead
             index="01"
-            eyebrow="Three reasons to come"
+            eyebrow="Five reasons to come"
             title="Sleep here, eat here,"
             italic="stay a while."
-            body="The rooms are upstairs, the kitchen is on the ground floor, and the lounge runs late. You can use one without booking the others."
-            className="lg:col-span-4 lg:pt-8"
+            body="The rooms are upstairs, the kitchen is on the ground floor, and the lounge runs late. The laundry and the drivers work to the same front desk. You can use any one of them without booking the others."
+            className="lg:col-span-3 lg:pt-8"
           />
 
-          <div className="grid gap-8 sm:grid-cols-3 lg:col-span-8 lg:gap-6">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 lg:col-span-9 lg:grid-cols-5 lg:gap-x-5">
             {SECTIONS.map((s) => (
               <Link key={s.href} href={s.href} className={`group ${s.offset}`}>
                 {/* struck as a foil medallion: gold ring, then a hairline gap */}
                 <div className="mx-auto aspect-square w-full max-w-72 overflow-hidden rounded-full border border-gold/40 p-1.5 transition duration-300 group-hover:border-gold/80">
                   <div className="size-full overflow-hidden rounded-full">
-                    <Plate src={unsplash(s.photo, 700)} alt={s.label} seed={s.label} />
+                    <Plate
+                      src={s.photo ? unsplash(s.photo, 700) : null}
+                      alt={s.label}
+                      seed={s.label}
+                    />
                   </div>
                 </div>
 
-                <div className="mt-7 text-center">
-                  <p className="display text-xl text-ink">{s.label}</p>
-                  <p className="mx-auto mt-2 max-w-56 text-[0.82rem] leading-[1.7] text-ink-2">{s.note}</p>
-                  <Eyelet className="mx-auto mt-5" />
+                <div className="mt-6 text-center">
+                  <p className="display text-lg text-ink lg:text-xl">{s.label}</p>
+                  <p className="mx-auto mt-2 max-w-56 text-[0.8rem] leading-[1.65] text-ink-2">{s.note}</p>
+                  <Eyelet className="mx-auto mt-4" />
                 </div>
               </Link>
             ))}
@@ -250,33 +250,6 @@ export default async function HomePage() {
           </div>
         </section>
       ) : null}
-
-      {/* ════════════════════════════════════ laundry and car hire
-          Two services that are not a room, a plate or a drink, so they sit
-          apart from the three medallions rather than crowding into them. */}
-      <section className="mx-auto max-w-380 px-5 pt-24 lg:px-12 lg:pt-32">
-        <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
-          {SERVICES.map((s) => (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="plate group flex items-start gap-6 p-8 transition hover:border-ink/35 lg:p-10"
-            >
-              <div className="min-w-0 flex-1">
-                <Icon name={s.icon} className="text-gold-deep" />
-                <p className="display mt-4 text-2xl text-ink">{s.label}</p>
-                <p className="mt-2.5 max-w-sm text-[0.88rem] leading-[1.7] text-ink-2">{s.note}</p>
-                {s.from !== null ? (
-                  <p className="tabular mt-5 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-deep">
-                    From {naira(s.from)}
-                  </p>
-                ) : null}
-              </div>
-              <Eyelet className="mt-1" />
-            </Link>
-          ))}
-        </div>
-      </section>
 
       {/* ══════════════════════════════════════════════ the ink band */}
       <section className="on-ink mt-24 lg:mt-32">
