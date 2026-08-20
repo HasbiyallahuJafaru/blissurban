@@ -5,7 +5,7 @@ import { picture } from "@/sanity/lib/image";
 import type { Room } from "@/sanity/lib/types";
 import { Plate } from "./Plate";
 import { ReservationForm } from "./forms/ReservationForm";
-import { ArrowRight, Eyebrow, PillButton, Rate, unitFor } from "./ui";
+import { ArrowRight, CloseButton, Eyebrow, PillButton, Rate, dialogClass, unitFor } from "./ui";
 
 /**
  * The hall is on the same tariff sheet as the rooms but is nothing like one:
@@ -62,7 +62,7 @@ export function HallCard({ hall, whatsapp }: { hall: Room; whatsapp: string }) {
         onClick={(e) => {
           if (e.target === booking.current) booking.current.close();
         }}
-        className="m-0 h-dvh max-h-none w-screen max-w-none bg-paper p-0 text-ink backdrop:bg-black/85 backdrop:backdrop-blur-sm"
+        className={dialogClass}
       >
         <div className="flex h-full flex-col">
           <header className="flex shrink-0 items-start justify-between gap-4 border-b border-ink/10 px-4 py-4 sm:px-6">
@@ -72,15 +72,7 @@ export function HallCard({ hall, whatsapp }: { hall: Room; whatsapp: string }) {
               </p>
               <h3 className="display truncate text-xl leading-tight text-ink sm:text-2xl">{hall.name}</h3>
             </div>
-            <button
-              onClick={() => booking.current?.close()}
-              aria-label="Close"
-              className="press grid size-11 shrink-0 place-items-center rounded-full border border-ink/25 text-ink hover:bg-paper-2"
-            >
-              <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className="size-5" aria-hidden>
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            </button>
+            <CloseButton onClick={() => booking.current?.close()} />
           </header>
 
           <div className="min-h-0 flex-1 overflow-y-auto">

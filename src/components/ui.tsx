@@ -87,6 +87,30 @@ export function Eyelet({ className = "" }: { className?: string }) {
 }
 
 /**
+ * A full-bleed native <dialog>. Used by the room viewer, the hall and the menu
+ * categories, so the three read as one thing. showModal() brings the focus
+ * trap, Escape to close and the backdrop with it.
+ */
+export const dialogClass =
+  "m-0 h-dvh max-h-none w-screen max-w-none bg-paper p-0 text-ink " +
+  "backdrop:bg-black/85 backdrop:backdrop-blur-sm";
+
+/** The round close control every dialog carries in its top right. */
+export function CloseButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Close"
+      className="press grid size-11 shrink-0 place-items-center rounded-full border border-ink/25 text-ink hover:bg-paper-2"
+    >
+      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className="size-5" aria-hidden>
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  );
+}
+
+/**
  * What the guest pays, with the tariff sheet's standard rate struck through
  * beside it when the hotel is discounting. The strike is sized in `em` so it
  * tracks whatever type size the caller sets.

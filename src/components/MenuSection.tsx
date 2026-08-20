@@ -1,18 +1,15 @@
 import type { ReactNode } from "react";
-import { AddToCart } from "./AddToCart";
 import { CartBar } from "./CartBar";
+import { MenuGroups } from "./MenuGroups";
+import { MenuRow } from "./MenuRow";
 import { Plate } from "./Plate";
-import { Eyebrow, Tag } from "./ui";
-import { naira } from "@/lib/format";
+import { Eyebrow } from "./ui";
+import { step } from "@/lib/format";
 import { unsplash } from "@/sanity/lib/image";
 import { categoryOrder } from "@/sanity/lib/seed";
 import type { MenuItem, Section } from "@/sanity/lib/types";
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-
-/* Two digits, because the lounge runs to ten categories and "010" is not a
-   number anyone writes. */
-const index = (i: number) => String(i + 1).padStart(2, "0");
 
 function group(items: MenuItem[], section: Section) {
   const preferred = categoryOrder[section] ?? [];
@@ -33,6 +30,8 @@ export function MenuSection({
   body,
   heroPhoto,
   orderable = true,
+  layout = "list",
+  noun,
   children,
 }: {
   section: Section;
@@ -49,10 +48,20 @@ export function MenuSection({
    * because it needs a date and a time a cart line cannot carry.
    */
   orderable?: boolean;
+  /**
+   * "list" stacks every category down the page, which suits a short list you
+   * can take in at a glance. "cards" shows the categories only and opens one
+   * at a time in a dialog, which is the difference between a menu and a wall
+   * once a section runs to ninety dishes.
+   */
+  layout?: "list" | "cards";
+  /** Singular noun for the card counts, e.g. "dish". Cards layout only. */
+  noun?: string;
   /** Rendered under the last category. The car hire booking form lives here. */
   children?: ReactNode;
 }) {
   const groups = group(items, section);
+  const cards = layout === "cards";
 
   return (
     <>
@@ -78,83 +87,59 @@ export function MenuSection({
           </div>
         </div>
 
-        <nav
-          aria-label="Menu categories"
-          className="foil-t mt-16 flex flex-wrap gap-x-8 gap-y-3 pt-7 lg:pr-12"
-        >
-          {groups.map((g, i) => (
-            <a
-              key={g.category}
-              href={`#${slug(g.category)}`}
-              className="group flex items-baseline gap-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-ink-2 transition hover:text-ink"
-            >
-              <span className="tabular text-[0.6rem] text-gold">{index(i)}</span>
-              {g.category}
-            </a>
-          ))}
-        </nav>
+        {/* In cards layout the cards below are the navigation, so a second
+            list of the same category names would only repeat itself. */}
+        {cards ? (
+          <div className="foil-t mt-16 pt-7 lg:pr-12">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-ink-2">
+              {groups.length} sections. Open one to see what is in it.
+            </p>
+          </div>
+        ) : (
+          <nav
+            aria-label="Menu categories"
+            className="foil-t mt-16 flex flex-wrap gap-x-8 gap-y-3 pt-7 lg:pr-12"
+          >
+            {groups.map((g, i) => (
+              <a
+                key={g.category}
+                href={`#${slug(g.category)}`}
+                className="group flex items-baseline gap-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-ink-2 transition hover:text-ink"
+              >
+                <span className="tabular text-[0.6rem] text-gold">{step(i)}</span>
+                {g.category}
+              </a>
+            ))}
+          </nav>
+        )}
       </section>
 
       <div className="mx-auto max-w-380 px-5 lg:px-12">
-        {groups.map((g, gi) => (
-          <section key={g.category} id={slug(g.category)} className="scroll-mt-28 pt-20">
-            {/* category label hangs in the left margin on wide screens */}
-            <div className="grid gap-8 lg:grid-cols-12">
-              <div className="lg:col-span-3">
-                <span className="tabular text-[0.62rem] font-semibold text-gold">{index(gi)}</span>
-                <h2 className="display mt-2 text-[clamp(1.6rem,2.8vw,2.2rem)] leading-tight text-ink lg:sticky lg:top-28">
-                  {g.category}
-                </h2>
+        {cards ? (
+          <div className="pt-14">
+            <MenuGroups groups={groups} orderable={orderable} noun={noun} />
+          </div>
+        ) : (
+          groups.map((g, gi) => (
+            <section key={g.category} id={slug(g.category)} className="scroll-mt-28 pt-20">
+              {/* category label hangs in the left margin on wide screens */}
+              <div className="grid gap-8 lg:grid-cols-12">
+                <div className="lg:col-span-3">
+                  <span className="tabular text-[0.62rem] font-semibold text-gold">{step(gi)}</span>
+                  <h2 className="display mt-2 text-[clamp(1.6rem,2.8vw,2.2rem)] leading-tight text-ink lg:sticky lg:top-28">
+                    {g.category}
+                  </h2>
+                </div>
+
+                <ul className="lg:col-span-9">
+                  {g.items.map((item) => (
+                    <MenuRow key={item._id} item={item} orderable={orderable} />
+                  ))}
+                </ul>
               </div>
-
-              <ul className="lg:col-span-9">
-                {g.items.map((item) => (
-                  <li
-                    key={item._id}
-                    className="rule-ink flex items-start gap-5 py-6 first:border-t-0 first:pt-0"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-                        <h3 className="display text-[1.15rem] leading-tight text-ink">{item.name}</h3>
-                        {item.tags?.map((t) => (
-                          <Tag key={t}>{t}</Tag>
-                        ))}
-                      </div>
-                      {item.description ? (
-                        <p className="mt-2 max-w-md text-[0.85rem] leading-[1.7] text-ink-2">
-                          {item.description}
-                        </p>
-                      ) : null}
-                    </div>
-
-                    {/* leader, the way a printed menu carries the eye to the price */}
-                    <div
-                      aria-hidden
-                      className="mt-3.5 hidden h-px flex-1 self-start border-b border-dotted border-ink/25 sm:block"
-                    />
-
-                    <p
-                      className={`tabular display mt-0.5 w-24 shrink-0 text-right text-ink ${
-                        item.onRequest ? "text-[0.8rem] leading-6 text-ink-2" : "text-[1.15rem]"
-                      }`}
-                    >
-                      {item.onRequest ? "On request" : naira(item.price)}
-                    </p>
-                    {/* the spacer keeps an "On request" row's price in the same
-                        column as every priced row above it */}
-                    {orderable ? (
-                      item.onRequest ? (
-                        <div aria-hidden className="w-20 shrink-0" />
-                      ) : (
-                        <AddToCart item={item} />
-                      )
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        ))}
+            </section>
+          ))
+        )}
 
         {children}
       </div>

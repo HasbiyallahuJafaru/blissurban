@@ -5,25 +5,7 @@ import { picture, unsplash } from "@/sanity/lib/image";
 import type { Room } from "@/sanity/lib/types";
 import { Plate } from "./Plate";
 import { ReservationForm } from "./forms/ReservationForm";
-import { ArrowRight, PillButton, Rate, unitFor } from "./ui";
-
-const dialogClass =
-  "m-0 h-dvh max-h-none w-screen max-w-none bg-paper p-0 text-ink " +
-  "backdrop:bg-black/85 backdrop:backdrop-blur-sm";
-
-function CloseButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      aria-label="Close"
-      className="press grid size-11 shrink-0 place-items-center rounded-full border border-ink/25 text-ink hover:bg-paper-2"
-    >
-      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className="size-5" aria-hidden>
-        <path d="M6 6l12 12M18 6L6 18" />
-      </svg>
-    </button>
-  );
-}
+import { ArrowRight, CloseButton, PillButton, Rate, dialogClass, unitFor } from "./ui";
 
 /**
  * A room as a foil medallion. Opening it shows one large photo with a
