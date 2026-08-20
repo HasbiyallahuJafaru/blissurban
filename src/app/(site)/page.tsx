@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { Plate } from "@/components/Plate";
 import { ArrowRight, Eyebrow, Eyelet, Icon, PillLink, Rate, SectionHead, unitFor } from "@/components/ui";
-import { naira } from "@/lib/format";
 import { getRooms, getSettings } from "@/sanity/lib/fetch";
 import { picture, unsplash } from "@/sanity/lib/image";
-import { rate } from "@/sanity/lib/types";
 
 export const revalidate = 60;
 
@@ -65,83 +63,64 @@ export default async function HomePage() {
 
   const bedrooms = rooms.filter((r) => r.kind !== "hall");
   const featured = bedrooms.find((r) => r.featured) ?? bedrooms[1] ?? bedrooms[0];
-  const cheapest = bedrooms.reduce<(typeof bedrooms)[number] | undefined>(
-    (a, b) => (!a || rate(b) < rate(a) ? b : a),
-    undefined,
-  );
 
   return (
     <>
       {/* ═══════════════════════════════════════════════════════ hero
-          5/7 split, not 6/6. The plate runs off the right edge. */}
-      <section className="mx-auto max-w-380 px-5 pt-14 lg:pl-12 lg:pr-0 lg:pt-24">
-        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-5">
-            <Eyebrow className="text-gold-deep">{settings.heroEyebrow}</Eyebrow>
+          The photograph is the ground, full bleed, with the type laid over
+          its foot. Two scrims do the work: one up the page so the image
+          dissolves into the black the rest of the site is built on, one
+          across from the left so the headline always has darkness under it
+          whatever the photograph happens to be doing. */}
+      <section className="relative flex min-h-[min(88svh,48rem)] flex-col justify-center overflow-hidden">
+        <div className="absolute inset-0">
+          <Plate
+            src={picture(settings.heroImage, HERO_PHOTO, 2000)}
+            alt="Inside Bliss Urban Hotels & Suites, Barnawa"
+            seed="bliss-hero"
+            priority
+          />
+        </div>
+        {/* Two scrims, both symmetric now the type is centred: one up the page
+            so the photograph dissolves into the black the rest of the site is
+            built on, and a flat tint so the headline keeps its contrast
+            wherever the photograph happens to be bright. */}
+        <div aria-hidden className="absolute inset-0 bg-linear-to-t from-paper via-paper/85 to-paper/30" />
+        <div aria-hidden className="absolute inset-0 bg-paper/30" />
 
-            {/* the headline hangs left of its own column */}
-            <h1 className="display mt-8 text-[clamp(2.7rem,4.8vw,4.15rem)] leading-[0.98] text-ink lg:-ml-1">
+        {/* top padding runs heavier than the bottom so the type sits optically
+            centred in what you can see, not behind the sticky header */}
+        <div className="relative mx-auto w-full max-w-380 px-5 pb-24 pt-36 text-center lg:px-12 lg:pb-32 lg:pt-44">
+          <div className="mx-auto max-w-4xl">
+            <h1 className="display text-[clamp(3rem,7vw,5.5rem)] leading-[0.95] text-ink">
               {settings.heroHeadline}
-              <em className="block font-normal italic text-gold-deep">{settings.heroHeadlineItalic}</em>
+              <em className="block font-normal italic text-gold-bright">
+                {settings.heroHeadlineItalic}
+              </em>
             </h1>
-
-            <p className="mt-9 max-w-md text-[1.02rem] leading-[1.8] text-ink-2">{settings.heroBody}</p>
-
-            <div className="mt-10 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
-              <PillLink href="/rooms#request">Request a room</PillLink>
-              <PillLink href="/restaurant" variant="ghost">
-                See the menu
-              </PillLink>
-            </div>
-
-            <dl className="foil-t mt-14 grid grid-cols-3 gap-x-6 gap-y-5 pt-8 lg:pr-10">
-              {[
-                { v: "24/7", k: "Front desk" },
-                { v: "00:00", k: "Kitchen closes" },
-                { v: `${bedrooms.length}`, k: "Room types" },
-              ].map((f) => (
-                <div key={f.k}>
-                  <dt className="sr-only">{f.k}</dt>
-                  <dd className="tabular display text-[1.75rem] leading-none text-ink">{f.v}</dd>
-                  <dd className="mt-2 text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-ink-3">
-                    {f.k}
-                  </dd>
-                </div>
-              ))}
-            </dl>
           </div>
+        </div>
+      </section>
 
-          <div className="relative pb-20 lg:col-span-7 lg:pb-0">
-            <div className="aspect-4/5 overflow-hidden rounded-l-sm border border-ink/12 lg:aspect-16/12">
-              <Plate
-                src={picture(settings.heroImage, HERO_PHOTO, 1400)}
-                alt="Inside Bliss Urban Hotels & Suites, Barnawa"
-                seed="bliss-hero"
-                priority
-              />
-            </div>
+      {/* ═══════════════════════════════════════════════ the story
+          One paragraph, centred, directly under the photograph. Hard-coded
+          the way the other section copy is; move it into siteSettings if the
+          hotel wants to edit it themselves. */}
+      <section className="mx-auto max-w-380 px-5 pt-24 text-center lg:px-12 lg:pt-32">
+        <div className="mx-auto max-w-3xl">
+          <Eyebrow className="justify-center text-gold-deep">Why we built it</Eyebrow>
 
-            {/* the rate card sits half off the plate, onto the paper */}
-            {cheapest ? (
-              <Link
-                href="/rooms"
-                className="plate group absolute bottom-0 left-0 flex w-[min(21rem,90%)] items-center gap-5 p-5 transition hover:border-ink/35 lg:-left-16 lg:bottom-12"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-gold-deep">
-                    Rooms from
-                  </p>
-                  <p className="tabular display mt-2 text-[1.9rem] leading-none text-ink">
-                    {naira(rate(cheapest))}
-                  </p>
-                  <p className="mt-2 truncate text-xs text-ink-3">
-                    {cheapest.name}, {unitFor(cheapest)}
-                  </p>
-                </div>
-                <Eyelet />
-              </Link>
-            ) : null}
-          </div>
+          <h2 className="display mt-7 text-[clamp(1.9rem,3.8vw,2.9rem)] leading-[1.08] text-ink">
+            Your home away
+            <em className="block font-normal italic text-gold-deep">from home.</em>
+          </h2>
+
+          <p className="mt-8 text-[1rem] leading-[1.85] text-ink-2">
+            Come at the end of a long week, or on the way back from a trip that took more out of you
+            than it gave. Sometimes the best place to hide is inside the town rather than hours away
+            from it, close enough that everything is still there the moment you want it again. Rest the
+            way you have been meaning to, and wake up ready and strong for the day ahead.
+          </p>
         </div>
       </section>
 

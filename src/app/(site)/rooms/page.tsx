@@ -24,13 +24,14 @@ export default async function RoomsPage() {
         <div className="max-w-2xl">
           <Eyebrow className="text-gold-deep">{bedrooms.length} room types</Eyebrow>
           <h1 className="display mt-7 text-[clamp(2.6rem,5.4vw,4.2rem)] leading-none text-ink">
-            Every room has
-            <em className="block font-normal italic text-gold-deep">the same power supply.</em>
+            Comfort at its best,
+            <em className="block font-normal italic text-gold-deep">whatever your budget.</em>
           </h1>
           <p className="mt-8 text-[0.98rem] leading-[1.8] text-ink-2">
-            The difference between them is space, not comfort. Open a room to look through the photos,
-            then request it there. Nothing is charged and nothing is held automatically: the front desk
-            checks what is actually free and rings the number you leave.
+            Whatever you can spend, you sleep well here. We look after every room the same way, so the
+            smallest of them still feels like somewhere you chose rather than somewhere you settled
+            for. Go higher and the space opens up and the quiet gets deeper. Open any room to see it
+            properly, and when you ask for one, a person calls you back.
           </p>
         </div>
       </section>

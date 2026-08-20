@@ -21,8 +21,8 @@ export const seedSettings: SiteSettings = {
   address: "No 3 Kashim Ibrahim Street, Narayi High Cost, Barnawa, Kaduna",
   hours: "Front desk 24 hours · Kitchen 07:00 to 00:00",
   heroEyebrow: "Barnawa, Kaduna",
-  heroHeadline: "The power never",
-  heroHeadlineItalic: "goes off.",
+  heroHeadline: "HOSPITALITY",
+  heroHeadlineItalic: "like it's home",
   heroBody:
     "Twenty-four hour power, a gated compound, and a kitchen that stays open late. Book a room, order dinner, send out your laundry, or have a driver meet your flight. Every request reaches the front desk within seconds.",
   heroImage: null,
