@@ -6,6 +6,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Laundry",
+  alternates: { canonical: "/laundry" },
   description:
     "Washing, ironing and starching at Bliss Urban Hotels & Suites, Narayi High Cost, Barnawa, Kaduna. Priced by the piece, collected from your room.",
 };

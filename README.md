@@ -194,7 +194,9 @@ so those are spelled out in full. Prices are untouched.
 - [ ] Add room sizes and bed types in Studio once the hotel supplies them
 - [ ] Ask the hotel how many the hall seats
 - [ ] Set the Sanity project id, Telegram token, chat id and five topic ids in Vercel
-- [ ] Point `NEXT_PUBLIC_SITE_URL` at the real domain, for the sitemap and canonical URLs
+- [ ] Set `NEXT_PUBLIC_SITE_URL` to `https://blissurbanhotels.com` in Vercel (the code
+      falls back to it, but setting it explicitly is what keeps preview and
+      production honest)
 - [ ] Send one test booking, one test order, one laundry request and one car hire
       request, and confirm each lands in the right topic
 

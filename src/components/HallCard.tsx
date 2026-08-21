@@ -20,7 +20,12 @@ export function HallCard({ hall, whatsapp }: { hall: Room; whatsapp: string }) {
     <>
       <div className="plate-sunk grid items-center gap-10 p-9 lg:grid-cols-12 lg:gap-14 lg:p-14">
         <div className="aspect-16/10 overflow-hidden rounded-sm border border-ink/12 lg:col-span-5 lg:aspect-4/3">
-          <Plate src={picture(hall.image, hall.photo, 1000)} alt={hall.name} seed="bliss-hall" />
+          <Plate
+            src={picture(hall.image, hall.photo, 1000)}
+            alt={hall.name}
+            seed="bliss-hall"
+            sizes="(min-width: 1024px) 42vw, 100vw"
+          />
         </div>
 
         <div className="lg:col-span-7">

@@ -68,6 +68,8 @@ export type SiteSettings = {
   heroHeadlineItalic: string;
   heroBody: string;
   heroImage: SanityImage;
+  /** Unsplash id, used only until a real hero photo exists. */
+  heroStandIn?: string;
   amenities: Amenity[];
   /** House rules from the tariff sheet, shown on the Rooms page. */
   policies: string[];

@@ -163,7 +163,7 @@ printf 'production'      | vercel env add NEXT_PUBLIC_SANITY_DATASET production
 printf '2026-03-01'      | vercel env add NEXT_PUBLIC_SANITY_API_VERSION production
 
 # --- Site URL, used by the sitemap, robots.txt and canonical tags ---
-printf 'https://blissurban.com' | vercel env add NEXT_PUBLIC_SITE_URL production
+printf 'https://blissurbanhotels.com' | vercel env add NEXT_PUBLIC_SITE_URL production
 
 # --- Sanity webhook secret (runtime) ---
 printf 'the-secret-from-step-1' | vercel env add SANITY_REVALIDATE_SECRET production
@@ -239,7 +239,7 @@ Give these answers:
 | Prompt | Answer |
 |---|---|
 | Name | `Revalidate site` |
-| URL | `https://your-domain/api/revalidate` |
+| URL | `https://blissurbanhotels.com/api/revalidate` |
 | Dataset | `production` |
 | Trigger on | Create, Update, Delete |
 | Filter | `_type in ["siteSettings", "room", "menuItem"]` |
@@ -268,7 +268,7 @@ makes a price change appear in seconds instead of a minute.
 
 ## 6. Enter the real content
 
-Open `https://your-domain/studio` and log in.
+Open `https://blissurbanhotels.com/studio` and log in.
 
 Everything below is already in `seed.ts` and correct. Studio is how it gets
 edited from then on, and nothing has to be re-typed to launch.
@@ -337,7 +337,7 @@ so do not leave the site pointing at an empty dataset.
 - [ ] Open a room, click through the thumbnails, request it, and submit.
 - [ ] Cart survives a page reload.
 - [ ] Lighthouse mobile: performance and accessibility.
-- [ ] `https://your-domain/sitemap.xml` and `/robots.txt` show the real domain.
+- [ ] `https://blissurbanhotels.com/sitemap.xml` and `/robots.txt` show the real domain.
 
 **Failure path**
 

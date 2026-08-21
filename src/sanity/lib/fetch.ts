@@ -6,7 +6,8 @@ import { rate, type MenuItem, type Room, type Section, type SiteSettings } from 
 export const isDemo = !sanityReady;
 
 const ROOM = `{_id, name, "slug": slug.current, price, discountedPrice, kind, capacity,
-  size, bed, amenities, description, image, images, featured, available}`;
+  size, bed, amenities, description, image, images, featured, available,
+  "photo": standInPhoto, "gallery": standInGallery}`;
 
 const ITEM = `{_id, name, price, onRequest, description, category, section, tags, image, available}`;
 
@@ -24,6 +25,18 @@ async function get<T>(query: string, tag: string, fallback: T): Promise<T> {
 
 export const getSettings = () =>
   get<SiteSettings>(`*[_type == "siteSettings"][0]`, "settings", seedSettings);
+
+/**
+ * The newest publish across everything the site renders, for the sitemap.
+ * Null with no CMS connected: no date at all beats a date invented at build
+ * time, which tells a crawler the whole site changed on every deploy.
+ */
+export const getLastModified = () =>
+  get<string | null>(
+    `*[_type in ["siteSettings", "room", "menuItem"]] | order(_updatedAt desc)[0]._updatedAt`,
+    "lastmod",
+    null,
+  );
 
 export const getRooms = () =>
   get<Room[]>(

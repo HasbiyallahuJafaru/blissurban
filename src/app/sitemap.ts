@@ -1,13 +1,17 @@
 import type { MetadataRoute } from "next";
+import { getLastModified } from "@/sanity/lib/fetch";
+import { SITE } from "@/lib/seo";
 
-// `||` not `??`: an env var set to an empty string would otherwise produce
-// relative URLs like "/rooms" in the sitemap.
-const base = process.env.NEXT_PUBLIC_SITE_URL || "https://blissurban.example";
+const PAGES = ["", "/rooms", "/restaurant", "/lounge", "/laundry", "/car-hire"];
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return ["", "/rooms", "/restaurant", "/lounge", "/laundry", "/car-hire"].map((path) => ({
-    url: `${base}${path}`,
-    lastModified: new Date(),
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const updated = await getLastModified();
+  // Omitted rather than faked when there is no CMS to ask.
+  const lastModified = updated ? new Date(updated) : undefined;
+
+  return PAGES.map((path) => ({
+    url: `${SITE}${path}`,
+    ...(lastModified ? { lastModified } : {}),
     changeFrequency: path === "" ? "weekly" : "daily",
     priority: path === "" ? 1 : 0.8,
   }));

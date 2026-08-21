@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Bodoni_Moda } from "next/font/google";
+import { SITE } from "@/lib/seo";
 import "./globals.css";
 
 const bodoni = Bodoni_Moda({
@@ -17,9 +18,9 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  // `||` not `??`: an env var set to an empty string is present but useless,
-  // and `new URL("")` throws and fails the whole build.
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://blissurban.example"),
+  // Every relative URL in metadata — canonicals, og:url, og:image — resolves
+  // against this, so it is read from the one constant in lib/seo.
+  metadataBase: new URL(SITE),
   title: {
     default: "Bliss Urban Hotels & Suites — Barnawa, Kaduna",
     template: "%s — Bliss Urban Hotels & Suites",
@@ -29,7 +30,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_NG",
+    url: "/",
     siteName: "Bliss Urban Hotels & Suites",
+  },
+  twitter: { card: "summary_large_image" },
+  // `max-image-preview: large` is what lets a hotel show a full-width photo in
+  // results rather than a thumbnail, and costs nothing to ask for.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   },
 };
 

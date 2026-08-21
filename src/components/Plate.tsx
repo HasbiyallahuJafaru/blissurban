@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element -- Sanity's CDN returns pre-sized
    URLs, so next/image would only add a second resize we already paid for.
    Plain <img loading="lazy"> covers the rest natively. */
+import type { Source } from "@/sanity/lib/image";
+
 
 /**
  * An image slot. With a Sanity asset it shows the photo. Without one it blocks
@@ -94,22 +96,34 @@ export function Plate({
   alt,
   seed,
   className = "",
+  sizes,
   priority = false,
 }: {
-  src: string | null;
+  src: Source | null;
   alt: string;
   seed: string;
   className?: string;
+  /**
+   * How wide this slot actually renders, as a CSS media condition. Without it
+   * the browser assumes the image fills the viewport and picks the largest
+   * candidate, which throws away most of what srcSet buys us.
+   */
+  sizes?: string;
   priority?: boolean;
 }) {
   if (!src) return <FoilPanel seed={seed} alt={alt} />;
 
   return (
     <img
-      src={src}
+      src={src.src}
+      srcSet={src.srcSet}
+      sizes={src.srcSet ? (sizes ?? "100vw") : undefined}
+      width={src.width}
+      height={src.height}
       alt={alt}
       loading={priority ? "eager" : "lazy"}
       fetchPriority={priority ? "high" : "auto"}
+      decoding={priority ? "sync" : "async"}
       className={`size-full object-cover ${className}`}
     />
   );

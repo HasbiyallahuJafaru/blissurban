@@ -20,6 +20,11 @@ const image = defineField({
       description: "What the photo shows, for screen readers and search.",
     }),
   ],
+  // Demanded only once a photo is actually there, so an empty slot is not an error.
+  validation: (r) =>
+    r.custom((value?: { asset?: unknown; alt?: string }) =>
+      !value?.asset || value.alt?.trim() ? true : "Add alt text describing this photo.",
+    ),
 });
 
 const siteSettings = defineType({
@@ -51,6 +56,14 @@ const siteSettings = defineType({
     defineField({ name: "heroHeadlineItalic", type: "string", group: "hero", description: "Second line, set in italic." }),
     defineField({ name: "heroBody", type: "text", rows: 3, group: "hero" }),
     defineField({ ...image, name: "heroImage", title: "Hero image", group: "hero" }),
+    defineField({
+      name: "heroStandIn",
+      title: "Stand-in hero (Unsplash id)",
+      type: "string",
+      group: "hero",
+      description:
+        "Borrowed photograph shown until a real one is uploaded above. Clearing this field drops the stand-in without a deploy.",
+    }),
 
     defineField({
       name: "amenities",
@@ -140,6 +153,21 @@ const room = defineType({
       type: "array",
       of: [{ type: "image", options: { hotspot: true } }],
       description: "Shown in the gallery when someone opens this room.",
+    }),
+    defineField({
+      name: "standInPhoto",
+      title: "Stand-in photo (Unsplash id)",
+      type: "string",
+      description:
+        "Borrowed photograph shown until a real one is uploaded above. Clear it once the photo is real.",
+    }),
+    defineField({
+      name: "standInGallery",
+      title: "Stand-in gallery (Unsplash ids)",
+      type: "array",
+      of: [{ type: "string" }],
+      options: { layout: "tags" },
+      description: "Borrowed gallery shots, replaced by More photos above.",
     }),
     defineField({ name: "featured", type: "boolean", description: "Shown large on the home page. Pick one." }),
     defineField({ name: "available", type: "boolean", initialValue: true, description: "Untick to hide from the site." }),

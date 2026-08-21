@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { HallCard } from "@/components/HallCard";
+import { JsonLd } from "@/components/JsonLd";
 import { RoomCard } from "@/components/RoomCard";
 import { Eyebrow, Knot } from "@/components/ui";
 import { getRooms, getSettings } from "@/sanity/lib/fetch";
+import { breadcrumbSchema, roomsSchema } from "@/lib/seo";
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Rooms & Suites",
+  alternates: { canonical: "/rooms" },
   description:
     "Six room categories from Bliss Standard to the Classic Presidential Suite, plus a hall for events, in Barnawa, Kaduna. Twenty-four hour power, fibre Wi-Fi, secure parking.",
 };
@@ -20,6 +23,8 @@ export default async function RoomsPage() {
 
   return (
     <>
+      <JsonLd data={roomsSchema(rooms)} />
+      <JsonLd data={breadcrumbSchema("Rooms & Suites", "/rooms")} />
       <section className="mx-auto max-w-380 px-5 pt-14 lg:px-12 lg:pt-20">
         <div className="max-w-2xl">
           <Eyebrow className="text-gold-deep">{bedrooms.length} room types</Eyebrow>

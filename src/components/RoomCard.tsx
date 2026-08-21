@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { picture, unsplash } from "@/sanity/lib/image";
+import { picture, unsplash, type Source } from "@/sanity/lib/image";
 import type { Room } from "@/sanity/lib/types";
 import { Plate } from "./Plate";
 import { ReservationForm } from "./forms/ReservationForm";
@@ -43,7 +43,7 @@ export function RoomCard({
   const shots = [
     { full: cover, thumb: picture(room.image, room.photo, 220) },
     ...extra,
-  ].filter((s): s is { full: string; thumb: string | null } => Boolean(s.full));
+  ].filter((s): s is { full: Source; thumb: Source | null } => Boolean(s.full));
 
   const main = shots[active]?.full ?? cover;
 
@@ -61,7 +61,7 @@ export function RoomCard({
           className="press mx-auto block aspect-square w-full max-w-72 overflow-hidden rounded-full border border-gold/40 p-1.5 transition duration-300 group-hover:border-gold/80"
         >
           <span className="block size-full overflow-hidden rounded-full">
-            <Plate src={cover} alt={room.name} seed={room.name} priority={priority} />
+            <Plate src={cover} alt={room.name} seed={room.name} sizes="(min-width: 1024px) 18rem, 60vw" priority={priority} />
           </span>
         </button>
 
@@ -110,7 +110,7 @@ export function RoomCard({
             <div className="mx-auto w-full max-w-4xl px-4 py-4 sm:px-6">
               {/* the one big photo */}
               <div className="aspect-4/3 overflow-hidden rounded-sm border border-gold/20 sm:aspect-16/10">
-                <Plate src={main} alt={`${room.name}, photo ${active + 1}`} seed={`${room.name}-${active}`} />
+                <Plate src={main} alt={`${room.name}, photo ${active + 1}`} seed={`${room.name}-${active}`} sizes="(min-width: 640px) 56rem, 100vw" />
               </div>
 
               {/* click through the rest */}
@@ -131,7 +131,7 @@ export function RoomCard({
                         i === active ? "border-gold" : "border-ink/15 opacity-60 hover:opacity-100"
                       }`}
                     >
-                      <Plate src={shot.thumb ?? shot.full} alt="" seed={`${room.name}-thumb-${i}`} priority />
+                      <Plate src={shot.thumb ?? shot.full} alt="" seed={`${room.name}-thumb-${i}`} sizes="7rem" priority />
                     </button>
                   ))}
                 </div>

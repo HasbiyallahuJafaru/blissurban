@@ -8,6 +8,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Car Hire & Airport Pickup",
+  alternates: { canonical: "/car-hire" },
   description:
     "Fixed fares from Bliss Urban Hotels & Suites, Barnawa, Kaduna. Kaduna Airport, Zaria, Kano and Abuja, published in full. Book a driver without booking a room.",
 };

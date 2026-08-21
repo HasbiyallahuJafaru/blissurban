@@ -1,10 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { JsonLd } from "@/components/JsonLd";
 import { Plate } from "@/components/Plate";
 import { ArrowRight, Eyebrow, Eyelet, Icon, PillLink, Rate, SectionHead, unitFor } from "@/components/ui";
 import { getRooms, getSettings } from "@/sanity/lib/fetch";
 import { picture, unsplash } from "@/sanity/lib/image";
+import { hotelSchema } from "@/lib/seo";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 /**
  * Everything the hotel sells, struck as one set of foil medallions. Laundry
@@ -75,7 +82,7 @@ export default async function HomePage() {
       <section className="relative flex min-h-[min(88svh,48rem)] flex-col justify-center overflow-hidden">
         <div className="absolute inset-0">
           <Plate
-            src={picture(settings.heroImage, HERO_PHOTO, 2000)}
+            src={picture(settings.heroImage, settings.heroStandIn ?? HERO_PHOTO, 2000)}
             alt="Inside Bliss Urban Hotels & Suites, Barnawa"
             seed="bliss-hero"
             priority
@@ -163,6 +170,7 @@ export default async function HomePage() {
                       src={s.photo ? unsplash(s.photo, 700) : null}
                       alt={s.label}
                       seed={s.label}
+                      sizes="(min-width: 1024px) 18rem, (min-width: 640px) 30vw, 45vw"
                     />
                   </div>
                 </div>
@@ -188,6 +196,7 @@ export default async function HomePage() {
                 src={picture(featured.image, featured.photo, 1200)}
                 alt={featured.name}
                 seed={`${featured.name}-feature`}
+                sizes="(min-width: 1024px) 58vw, 100vw"
               />
             </div>
 
@@ -248,7 +257,12 @@ export default async function HomePage() {
           </div>
 
           <div className="aspect-5/4 overflow-hidden rounded-l-sm border border-ink/15 lg:col-span-6 lg:aspect-4/3">
-            <Plate src={unsplash(PROMO_PHOTO, 900)} alt="A tray from the kitchen" seed="room service tray" />
+            <Plate
+              src={unsplash(PROMO_PHOTO, 900)}
+              alt="A tray from the kitchen"
+              seed="room service tray"
+              sizes="(min-width: 1024px) 50vw, 100vw"
+            />
           </div>
         </div>
       </section>
@@ -303,25 +317,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Hotel",
-            name: "Bliss Urban Hotels & Suites",
-            address: {
-              "@type": "PostalAddress",
-              streetAddress: "No 3 Kashim Ibrahim Street, Narayi High Cost",
-              addressLocality: "Barnawa, Kaduna",
-              addressRegion: "Kaduna",
-              addressCountry: "NG",
-            },
-            telephone: settings.phone,
-            email: settings.email,
-          }),
-        }}
-      />
+      <JsonLd data={hotelSchema(settings, rooms)} />
     </>
   );
 }

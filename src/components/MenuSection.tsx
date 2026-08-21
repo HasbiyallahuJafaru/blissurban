@@ -82,6 +82,7 @@ export function MenuSection({
               src={heroPhoto ? unsplash(heroPhoto, 1100) : null}
               alt={`The ${section} at Bliss Urban`}
               seed={`${section}-hero`}
+              sizes="(min-width: 1024px) 50vw, 100vw"
               priority
             />
           </div>
