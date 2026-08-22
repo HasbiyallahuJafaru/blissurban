@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { naira } from "@/lib/format";
+import { asDate, asTime, naira, nightsBetween } from "@/lib/format";
 import { priceList } from "@/sanity/lib/fetch";
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -224,15 +224,27 @@ export async function POST(request: Request) {
           ? "\n<b>Transfer:</b> not needed"
           : `\n\n🚗 <b>TRANSFER — ${TRANSFER_LABEL[data.transfer]}</b>` +
             (data.transferPlace ? `\n<b>Where:</b> ${esc(data.transferPlace)}` : "") +
-            (data.transferTime ? `\n<b>When:</b> ${esc(data.transferTime)}` : "");
+            (data.transferTime ? `\n<b>When:</b> ${esc(asTime(data.transferTime))}` : "") +
+            `\n<i>Fare quoted separately.</i>`;
 
       const hall = room.kind === "hall";
 
+      // The desk was handed a nightly rate and left to do the sum itself. It now
+      // gets the multiplication too, so the figure the guest owes is on the
+      // message rather than in somebody's head.
+      const nights = nightsBetween(data.checkIn, data.checkOut);
+      const unit = hall ? "day" : "night";
+      const stay = nights
+        ? `\n<b>${hall ? "Days" : "Nights"}:</b> ${nights}` +
+          `\n<b>Total:</b> ${naira(room.price * nights)}  <i>(${nights} × ${naira(room.price)})</i>`
+        : `\n<b>Total:</b> <i>dates unclear, confirm with the guest</i>`;
+
       await sendToTelegram(
         `${hall ? "🏛 <b>HALL REQUEST</b>" : "🔑 <b>ROOM REQUEST</b>"} · ${orderRef}\n` +
-          `\n<b>${esc(room.name)}</b> — ${naira(room.price)} ${hall ? "per day" : "per night"}` +
-          `\n<b>${hall ? "Event date" : "Check in"}:</b> ${esc(data.checkIn)}` +
-          `\n<b>${hall ? "Until" : "Check out"}:</b> ${esc(data.checkOut)}` +
+          `\n<b>${esc(room.name)}</b> — ${naira(room.price)} per ${unit}` +
+          `\n<b>${hall ? "Event date" : "Check in"}:</b> ${esc(asDate(data.checkIn))}` +
+          `\n<b>${hall ? "Until" : "Check out"}:</b> ${esc(asDate(data.checkOut))}` +
+          stay +
           `\n<b>Guests:</b> ${data.guests}` +
           transfer +
           who +
@@ -248,12 +260,20 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: false, error: "That route is no longer listed." }, { status: 400 });
       }
 
+      // Only the one-way fare is published, so a return quotes the leg we know
+      // and flags the other rather than doubling a number nobody agreed to.
+      const total =
+        data.trip === "return"
+          ? `\n<b>Total:</b> ${naira(route.price)} outward, return fare to confirm`
+          : `\n<b>Total:</b> ${naira(route.price)}`;
+
       await sendToTelegram(
         `🚗 <b>CAR HIRE</b> · ${orderRef}\n` +
-          `\n<b>${esc(route.name)}</b> — ${naira(route.price)}` +
-          `\n<b>Trip:</b> ${data.trip === "return" ? "Return, fare to confirm" : "One way"}` +
+          `\n<b>${esc(route.name)}</b> — ${naira(route.price)} one way` +
+          `\n<b>Trip:</b> ${data.trip === "return" ? "Return" : "One way"}` +
+          total +
           `\n<b>Pick up from:</b> ${esc(data.pickup)}` +
-          `\n<b>When:</b> ${esc(data.date)} at ${esc(data.time)}` +
+          `\n<b>When:</b> ${esc(asDate(data.date))} at ${esc(asTime(data.time))}` +
           `\n<b>Passengers:</b> ${data.passengers}` +
           who +
           `\n\n<i>${stamp()}</i>`,

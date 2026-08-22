@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { naira } from "@/lib/format";
+import { asDate, asTime, naira } from "@/lib/format";
 import type { MenuItem } from "@/sanity/lib/types";
 import { PillButton } from "../ui";
 import { Field, Honeypot, Input, Result, Select, Textarea, postNotify, nowMs, type Submission } from "./fields";
@@ -45,7 +45,7 @@ export function CarHireForm({ routes, whatsapp }: { routes: MenuItem[]; whatsapp
 
     setFallback(
       `Hello Bliss Urban, I would like to book a car: ${route?.name ?? "a route"}` +
-        ` (${TRIP[trip].label.toLowerCase()}) on ${get("date")} at ${get("time")}` +
+        ` (${TRIP[trip].label.toLowerCase()}) on ${asDate(get("date"))} at ${asTime(get("time"))}` +
         `, picking up from ${get("pickup")}, ${get("passengers")} passenger(s).` +
         ` My name is ${get("name")}, ${get("phone")}.`,
     );

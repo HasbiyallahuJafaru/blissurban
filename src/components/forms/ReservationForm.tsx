@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { naira } from "@/lib/format";
+import { naira, asDate, asTime } from "@/lib/format";
 import { rate, type Room } from "@/sanity/lib/types";
 import { PillButton, unitFor } from "../ui";
 import { Field, Honeypot, Input, Result, Select, Textarea, postNotify, nowMs, type Submission } from "./fields";
@@ -42,11 +42,11 @@ export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: 
       transfer === "none"
         ? ""
         : ` I also need a transfer (${TRANSFER[transfer].label.toLowerCase()}) at ${get("transferPlace")}${
-            get("transferTime") ? `, ${get("transferTime")}` : ""
+            get("transferTime") ? `, ${asTime(get("transferTime"))}` : ""
           }.`;
 
     setFallback(
-      `Hello Bliss Urban, I would like to request the ${room?.name ?? "room"} from ${get("checkIn")} to ${get("checkOut")} for ${get("guests")} guest(s).${transferLine} My name is ${get("name")}, ${get("phone")}.`,
+      `Hello Bliss Urban, I would like to request the ${room?.name ?? "room"} from ${asDate(get("checkIn"))} to ${asDate(get("checkOut"))} for ${get("guests")} guest(s).${transferLine} My name is ${get("name")}, ${get("phone")}.`,
     );
 
     setState({ status: "sending" });
@@ -189,7 +189,7 @@ export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: 
                     <Input name="transferPlace" required maxLength={120} placeholder="Kaduna Airport" />
                   </Field>
                   <Field label="What time" hint="Your flight or arrival time is enough.">
-                    <Input name="transferTime" maxLength={40} placeholder="14:30" className="tabular" />
+                    <Input type="time" name="transferTime" className="tabular" />
                   </Field>
                 </div>
               </>
