@@ -58,14 +58,17 @@ export default defineConfig({
                           .title(category)
                           .id(`${name}-${category.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`)
                           .child(
-                            S.documentList()
+                            // documentTypeList rather than documentList: it keeps
+                            // the schema type attached, so "create new" inside a
+                            // folder still makes the right kind of document.
+                            S.documentTypeList(name)
                               .title(category)
-                              .filter('_type == $type && category == $category')
+                              .filter("_type == $type && category == $category")
                               .params({ type: name, category })
-                              // New documents made inside a folder start in it.
-                              .initialValueTemplates([
-                                S.initialValueTemplateItem(`${name}-by-category`, { category }),
-                              ]),
+                              // Required whenever a list carries a custom filter:
+                              // without it the query is run against a floating
+                              // API version, which Sanity is moving away from.
+                              .apiVersion(apiVersion),
                           ),
                       ),
                     ]),
@@ -73,16 +76,5 @@ export default defineConfig({
             ),
           ]),
     }),
-  ],
-  /** Lets "create new" inside a category folder pre-fill that category. */
-  templates: (prev: unknown[]) => [
-    ...prev,
-    ...PRICED_LIST_TYPES.map(({ name, title }) => ({
-      id: `${name}-by-category`,
-      title: `${title} item in category`,
-      schemaType: name,
-      parameters: [{ name: "category", type: "string" }],
-      value: (params: { category: string }) => ({ category: params.category }),
-    })),
   ],
 });
