@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { naira, asDate, asTime } from "@/lib/format";
 import { rate, type Room } from "@/sanity/lib/types";
 import { PillButton, unitFor } from "../ui";
-import { Field, Honeypot, Input, Result, Select, Textarea, postNotify, nowMs, type Submission } from "./fields";
+import { DateInput, TimeInput, Field, Honeypot, Input, Result, Select, Textarea, postNotify, nowMs, type Submission } from "./fields";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -112,10 +112,10 @@ export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: 
         </div>
 
         <Field label={hall ? "Event date" : "Check in"}>
-          <Input type="date" name="checkIn" required min={today()} defaultValue={today()} />
+          <DateInput name="checkIn" required min={today()} defaultValue={today()} />
         </Field>
         <Field label={hall ? "Until" : "Check out"} hint={hall ? "Same day is fine." : undefined}>
-          <Input type="date" name="checkOut" required min={today()} />
+          <DateInput name="checkOut" required min={today()} />
         </Field>
 
         <Field label={hall ? "Guests expected" : "Guests"}>
@@ -189,7 +189,7 @@ export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: 
                     <Input name="transferPlace" required maxLength={120} placeholder="Kaduna Airport" />
                   </Field>
                   <Field label="What time" hint="Your flight or arrival time is enough.">
-                    <Input type="time" name="transferTime" className="tabular" />
+                    <TimeInput name="transferTime" />
                   </Field>
                 </div>
               </>

@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { asDate, asTime } from "@/lib/format";
 
 /**
  * Reading the clock is impure, so it lives here at module scope rather than in
@@ -60,6 +61,108 @@ export function Field({
 
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${wellClass} ${props.className ?? ""}`} />;
+}
+
+/**
+ * A date field that always reads dd/mm/yyyy, whatever the guest's browser
+ * would otherwise show.
+ *
+ * `<input type="date">` renders its own text in the locale of the browser, and
+ * HTML gives no way to override that: a phone set to US English shows
+ * mm/dd/yyyy and there is no attribute that says otherwise. So the native
+ * input stays, because it carries the value, the validation and the calendar
+ * everyone already knows how to use, and its own text is made transparent and
+ * ours painted over the top.
+ *
+ * Clicking anywhere in the field opens the calendar rather than only the small
+ * icon at its edge.
+ */
+export function DateInput({
+  name,
+  required,
+  min,
+  defaultValue = "",
+}: {
+  name: string;
+  required?: boolean;
+  min?: string;
+  defaultValue?: string;
+}) {
+  const [value, setValue] = useState(defaultValue);
+  const ref = useRef<HTMLInputElement>(null);
+
+  const openPicker = () => {
+    // showPicker throws if the browser does not have one, or if the click was
+    // not judged a user gesture. Either way the native field still works.
+    try {
+      ref.current?.showPicker();
+    } catch {
+      /* the input handles it on its own */
+    }
+  };
+
+  return (
+    <div className="relative">
+      <input
+        ref={ref}
+        type="date"
+        name={name}
+        required={required}
+        min={min}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onClick={openPicker}
+        className={`${wellClass} text-transparent [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:cursor-pointer`}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-[0.95rem] tabular"
+      >
+        {value ? <span className="text-ink">{asDate(value)}</span> : <span className="text-ink-3/70">dd/mm/yyyy</span>}
+      </span>
+    </div>
+  );
+}
+
+/** The same trick for time, so the desk and the guest both read am/pm. */
+export function TimeInput({
+  name,
+  required,
+  defaultValue = "",
+}: {
+  name: string;
+  required?: boolean;
+  defaultValue?: string;
+}) {
+  const [value, setValue] = useState(defaultValue);
+  const ref = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="relative">
+      <input
+        ref={ref}
+        type="time"
+        name={name}
+        required={required}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onClick={() => {
+          try {
+            ref.current?.showPicker();
+          } catch {
+            /* the input handles it on its own */
+          }
+        }}
+        className={`${wellClass} text-transparent [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:cursor-pointer`}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-[0.95rem] tabular"
+      >
+        {value ? <span className="text-ink">{asTime(value)}</span> : <span className="text-ink-3/70">--:-- am</span>}
+      </span>
+    </div>
+  );
 }
 
 export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {

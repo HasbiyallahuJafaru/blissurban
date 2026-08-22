@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { asDate, asTime, naira } from "@/lib/format";
 import type { MenuItem } from "@/sanity/lib/types";
 import { PillButton } from "../ui";
-import { Field, Honeypot, Input, Result, Select, Textarea, postNotify, nowMs, type Submission } from "./fields";
+import { DateInput, TimeInput, Field, Honeypot, Input, Result, Select, Textarea, postNotify, nowMs, type Submission } from "./fields";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -129,10 +129,10 @@ export function CarHireForm({ routes, whatsapp }: { routes: MenuItem[]; whatsapp
         </div>
 
         <Field label="Date">
-          <Input type="date" name="date" required min={today()} defaultValue={today()} />
+          <DateInput name="date" required min={today()} defaultValue={today()} />
         </Field>
         <Field label="Time" hint="Your flight time is enough.">
-          <Input type="time" name="time" required className="tabular" />
+          <TimeInput name="time" required />
         </Field>
 
         <div className="sm:col-span-2">
