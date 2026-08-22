@@ -46,3 +46,9 @@ next-env.d.ts
 
 # generated from seed.ts on demand
 seed.ndjson
+
+# python bytecode from one-off asset scripts
+__pycache__/
+
+# dataset snapshots taken before migrations
+backup-*.tar.gz
