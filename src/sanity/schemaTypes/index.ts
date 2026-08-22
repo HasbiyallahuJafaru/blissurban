@@ -1,13 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { categoryOrder } from "../lib/seed";
 
-const allCategories = [
-  ...categoryOrder.restaurant,
-  ...categoryOrder.lounge,
-  ...categoryOrder.laundry,
-  ...categoryOrder.transport,
-];
-
 const image = defineField({
   name: "image",
   type: "image",
@@ -175,53 +168,74 @@ const room = defineType({
   preview: { select: { title: "name", subtitle: "price", media: "image" } },
 });
 
-const menuItem = defineType({
-  name: "menuItem",
-  title: "Menu Item",
-  type: "document",
-  fields: [
-    defineField({ name: "name", type: "string", validation: (r) => r.required() }),
-    defineField({ name: "price", title: "Price (₦)", type: "number", validation: (r) => r.required().min(0) }),
-    defineField({
-      name: "onRequest",
-      title: "Price on request",
-      type: "boolean",
-      initialValue: false,
-      description: "Hides the price and shows “On request” instead. The item cannot be added to an order.",
-    }),
-    defineField({
-      name: "section",
-      type: "string",
-      options: {
-        list: [
-          { title: "Restaurant", value: "restaurant" },
-          { title: "Lounge", value: "lounge" },
-          { title: "Laundry", value: "laundry" },
-          { title: "Car hire", value: "transport" },
-        ],
-        layout: "radio",
-      },
-      validation: (r) => r.required(),
-    }),
-    defineField({
-      name: "category",
-      type: "string",
-      options: { list: allCategories },
-      validation: (r) => r.required(),
-      description: "Must belong to the section chosen above.",
-    }),
-    defineField({ name: "description", type: "text", rows: 2 }),
-    defineField({
-      name: "tags",
-      type: "array",
-      of: [{ type: "string" }],
-      options: { list: ["Chef's pick", "Spicy", "Vegetarian", "No alcohol", "House"], layout: "tags" },
-    }),
-    image,
-    defineField({ name: "displayOrder", type: "number", description: "Lower numbers sort first inside a category." }),
-    defineField({ name: "available", type: "boolean", initialValue: true, description: "Untick when it sells out." }),
-  ],
-  preview: { select: { title: "name", subtitle: "category", media: "image" } },
-});
+/**
+ * One document type per priced list, rather than a single "menuItem" holding
+ * all four behind a `section` dropdown.
+ *
+ * The merged version put ninety dishes, ninety-one drinks, the laundry prices
+ * and the car hire fares into one undifferentiated list, and offered every
+ * category from every section in the same dropdown, so adding a beer invited
+ * you to file it under Breakfast. Splitting the type means each list carries
+ * only its own categories, and the Studio can show them as four separate
+ * groups that match the four pages on the site.
+ *
+ * The type *is* the section, so no `section` field is stored; the queries in
+ * lib/fetch.ts add it back to keep the rest of the app unchanged.
+ */
+const PRICED_LISTS = [
+  { name: "restaurantItem", title: "Restaurant", noun: "Dish", categories: categoryOrder.restaurant },
+  { name: "loungeItem", title: "Lounge", noun: "Drink", categories: categoryOrder.lounge },
+  { name: "laundryItem", title: "Laundry", noun: "Item", categories: categoryOrder.laundry },
+  { name: "transportItem", title: "Car Hire", noun: "Route", categories: categoryOrder.transport },
+] as const;
 
-export const schemaTypes = [siteSettings, room, menuItem];
+const pricedList = ({
+  name,
+  title,
+  noun,
+  categories,
+}: {
+  name: string;
+  title: string;
+  noun: string;
+  categories: readonly string[];
+}) =>
+  defineType({
+    name,
+    title,
+    type: "document",
+    fields: [
+      defineField({ name: "name", title: `${noun} name`, type: "string", validation: (r) => r.required() }),
+      defineField({ name: "price", title: "Price (₦)", type: "number", validation: (r) => r.required().min(0) }),
+      defineField({
+        name: "onRequest",
+        title: "Price on request",
+        type: "boolean",
+        initialValue: false,
+        description: "Hides the price and shows “On request” instead. The item cannot be added to an order.",
+      }),
+      defineField({
+        name: "category",
+        type: "string",
+        options: { list: [...categories] },
+        validation: (r) => r.required(),
+        description: `Which part of the ${title.toLowerCase()} list this belongs to.`,
+      }),
+      defineField({ name: "description", type: "text", rows: 2 }),
+      defineField({
+        name: "tags",
+        type: "array",
+        of: [{ type: "string" }],
+        options: { list: ["Chef's pick", "Spicy", "Vegetarian", "No alcohol", "House"], layout: "tags" },
+      }),
+      image,
+      defineField({ name: "displayOrder", type: "number", description: "Lower numbers sort first inside a category." }),
+      defineField({ name: "available", type: "boolean", initialValue: true, description: "Untick when it sells out." }),
+    ],
+    preview: { select: { title: "name", subtitle: "category", media: "image" } },
+  });
+
+const pricedListTypes = PRICED_LISTS.map(pricedList);
+
+export const schemaTypes = [siteSettings, room, ...pricedListTypes];
+export const PRICED_LIST_TYPES = PRICED_LISTS.map((l) => ({ name: l.name, title: l.title }));

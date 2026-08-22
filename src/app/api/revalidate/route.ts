@@ -6,7 +6,12 @@ import { parseBody } from "next-sanity/webhook";
 const TAGS: Record<string, string> = {
   siteSettings: "settings",
   room: "rooms",
-  menuItem: "menu",
+  // The four priced lists are separate document types but share one cache tag,
+  // because every page that reads one reads it through getMenu.
+  restaurantItem: "menu",
+  loungeItem: "menu",
+  laundryItem: "menu",
+  transportItem: "menu",
 };
 
 export async function POST(request: NextRequest) {

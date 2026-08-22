@@ -99,15 +99,22 @@ for (const room of seedRooms) {
   );
 }
 
+/** One document type per priced list; the type is the section. */
+const SECTION_TYPE = {
+  restaurant: "restaurantItem",
+  lounge: "loungeItem",
+  laundry: "laundryItem",
+  transport: "transportItem",
+};
+
 seedMenu.forEach((item, i) => {
   docs.push(
     clean({
       _id: item._id,
-      _type: "menuItem",
+      _type: SECTION_TYPE[item.section],
       name: item.name,
       price: item.price,
       onRequest: item.onRequest,
-      section: item.section,
       category: item.category,
       description: item.description,
       tags: item.tags,

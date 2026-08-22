@@ -9,7 +9,15 @@ const ROOM = `{_id, name, "slug": slug.current, price, discountedPrice, kind, ca
   size, bed, amenities, description, image, images, featured, available,
   "photo": standInPhoto, "gallery": standInGallery}`;
 
-const ITEM = `{_id, name, price, onRequest, description, category, section, tags, image, available}`;
+/** One document type per priced list; the type is the section. */
+export const SECTION_TYPE: Record<Section, string> = {
+  restaurant: "restaurantItem",
+  lounge: "loungeItem",
+  laundry: "laundryItem",
+  transport: "transportItem",
+};
+
+const ITEM = `{_id, name, price, onRequest, description, category, tags, image, available}`;
 
 /** Tags let the Sanity webhook drop exactly the pages that changed. */
 async function get<T>(query: string, tag: string, fallback: T): Promise<T> {
@@ -47,8 +55,10 @@ export const getRooms = () =>
 
 export const getMenu = (section: Section) =>
   get<MenuItem[]>(
-    `*[_type == "menuItem" && section == "${section}" && available == true]
-      | order(displayOrder asc, name asc) ${ITEM}`,
+    // `section` is not stored any more, so it is added back here and the rest
+    // of the app carries on reading items exactly as before.
+    `*[_type == "${SECTION_TYPE[section]}" && available == true]
+      | order(displayOrder asc, name asc) {...${ITEM}, "section": "${section}"}`,
     "menu",
     seedMenu.filter((i) => i.section === section),
   );
