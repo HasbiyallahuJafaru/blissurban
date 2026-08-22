@@ -98,33 +98,35 @@ Keep it. It goes into both Vercel and the Sanity webhook in step 5.
 
 ## 2. Telegram
 
+Four things have to happen in the Telegram app, because no API can do them:
+
 1. Message [@BotFather](https://t.me/BotFather), send `/newbot`, copy the token.
 2. Create a group, open its settings and turn on **Topics**.
-3. Add the bot to the group and make it an **administrator**.
-4. Create five topics: `Reservations`, `Restaurant`, `Lounge`, `Laundry`,
-   `Car Hire`.
+3. Add the bot to the group and make it an **administrator**, with the
+   **Manage Topics** permission ticked.
+4. Send any message in the group, so the bot has an update to find it by.
 
-Each department reads only its own thread. A topic id left unset is not an
-error: Telegram ignores an unknown `message_thread_id` and the message lands in
-the group's General thread instead, so you can add Laundry and Car Hire later
-without anything breaking in the meantime.
+Then let the script do the rest. It creates the five topics itself —
+`Reservations`, `Restaurant`, `Lounge`, `Laundry` and `Car Hire` — so they do
+not need making by hand:
 
-**Chat ID.** Send any message in the group, then open:
-
-```
-https://api.telegram.org/bot<TOKEN>/getUpdates
+```bash
+TELEGRAM_BOT_TOKEN=123456:ABC... node scripts/telegram-setup.mjs --test
 ```
 
-Look for `"chat":{"id":-100...}`. It is negative and starts with `-100`.
+It verifies the token, finds the group, checks the bot really is an admin that
+can manage topics, creates the five topics, reads each `message_thread_id`
+straight out of the reply, and writes all six numbers into `.env.local`.
+`--test` posts one message into each thread so you can see the routing work
+before a guest does.
 
-**Topic IDs.** Two ways, either is fine:
+Topics already recorded in `.env.local` are left alone rather than created
+twice, since Telegram offers no way to list existing ones. `--dry-run` shows
+what it would do and touches nothing.
 
-- In Telegram Desktop or Web, right-click a topic, Copy Link. The number at the
-  end of the link is the topic ID.
-- Or post a message inside each topic and read `message_thread_id` from
-  `getUpdates`.
-
-Write down all six numbers before moving on: the chat id and five topic ids.
+A topic id left unset is not an error: Telegram ignores an unknown
+`message_thread_id` and the message lands in the group's General thread, so
+Laundry and Car Hire can be added later without anything breaking.
 
 ---
 
@@ -216,6 +218,49 @@ vercel env pull .env.local
 
 ---
 
+## 4a. Stop the form being flooded
+
+Three layers, outermost first. Only the first one costs nothing to run.
+
+**The Vercel firewall (do this once the project exists).** A rule here rejects
+a flood at the edge, before the function is invoked, so a sustained attack
+costs no compute and never reaches Telegram at all.
+
+Project -> **Firewall** -> **Add Rule**:
+
+| Field | Value |
+|---|---|
+| Name | `notify flood` |
+| If | Request Path **equals** `/api/notify` |
+| Then | **Rate Limit** |
+| Requests | `10` per `60s` |
+| Keyed by | IP address |
+| Action when exceeded | Deny (`429`) |
+
+Turn on **Attack Challenge Mode** from the same page if the site is ever
+actively targeted; it challenges every visitor and can be switched off again
+in a click.
+
+**In the route.** `src/app/api/notify/route.ts` holds two in-memory limits: six
+submissions per IP per minute, and eighteen Telegram messages per minute across
+every source. The second is the important one — Telegram refuses somewhere
+around twenty messages a minute into a single chat, so without a ceiling a
+flood does not merely spam the group, it wedges it, and genuine bookings stop
+arriving while the desk sees nothing wrong. Requests already accepted always
+finish sending, so an order never arrives half-delivered.
+
+Both are tunable without a deploy through `NOTIFY_LIMIT_PER_IP` and
+`NOTIFY_LIMIT_GLOBAL`.
+
+These live in instance memory, so they reset per lambda and are best effort by
+nature. That is the reason the firewall rule above matters: it is the only one
+of the two that a distributed flood cannot walk around by landing on fresh
+instances.
+
+**If it is ever targeted properly.** Swap the per-IP bucket for a shared
+counter — Upstash Redis has a free tier and `@upstash/ratelimit` drops into the
+same function. Only worth doing if the firewall rule proves insufficient.
+
 ## 5. Connect Sanity to the deployed site
 
 **CORS.** The Studio is served from your own domain at `/studio`, so Sanity has
@@ -223,20 +268,28 @@ to allow that origin. `--credentials` is the part people miss: without it the
 page loads and then login fails.
 
 ```bash
-npx sanity cors add https://your-project.vercel.app --credentials
-npx sanity cors add https://blissurban.com --credentials
+npx sanity cors add https://your-project.vercel.app --credentials  # add once deployed
+npx sanity cors add https://blissurbanhotels.com --credentials
 npx sanity cors add http://localhost:3000 --credentials
 
 npx sanity cors list   # check
 ```
 
 Add the apex and `www` separately if you use both. Sanity matches origins
-exactly, so `https://blissurban.com` does not cover `https://www.blissurban.com`.
+exactly, so `https://blissurbanhotels.com` does not cover
+`https://www.blissurbanhotels.com`.
 
-**Webhook.** `sanity hooks create` takes no flags and prompts for each field.
-Give these answers:
+**Webhook.** GROQ-powered webhooks cannot be created from the CLI. `sanity
+hooks create` in the current CLI does not prompt for anything — it only opens
+the manage UI in a browser — and the public `api.sanity.io/hooks` endpoint
+creates legacy webhooks only, which do not send the signature header that
+`parseBody` in `src/app/api/revalidate/route.ts` verifies.
 
-| Prompt | Answer |
+So this one is done in the browser:
+
+**https://www.sanity.io/organizations/oe6RsRFOa/project/9225tb8w/api/webhooks/new**
+
+| Field | Value |
 |---|---|
 | Name | `Revalidate site` |
 | URL | `https://blissurbanhotels.com/api/revalidate` |
@@ -244,12 +297,14 @@ Give these answers:
 | Trigger on | Create, Update, Delete |
 | Filter | `_type in ["siteSettings", "room", "menuItem"]` |
 | Projection | leave empty |
+| Status | Enabled |
 | HTTP method | `POST` |
-| Secret | the string from step 1 |
+| API version | `v2021-03-25` |
+| Secret | the `SANITY_REVALIDATE_SECRET` value in `.env.local` |
+
+Afterwards the CLI can still inspect it:
 
 ```bash
-npx sanity hooks create
-
 npx sanity hooks list    # confirm it exists
 npx sanity hooks logs    # after publishing something, check delivery
 ```
@@ -270,20 +325,26 @@ makes a price change appear in seconds instead of a minute.
 
 Open `https://blissurbanhotels.com/studio` and log in.
 
-Everything below is already in `seed.ts` and correct. Studio is how it gets
-edited from then on, and nothing has to be re-typed to launch.
+Everything below is already in `seed.ts` and correct, and none of it has to be
+re-typed. Import it in one pass, then use Studio to edit from there:
 
-- [ ] Create the single **Site Settings** document. Fill in contact details,
-      hero copy, the amenity list, the house rules, and the promo band.
-- [ ] Add the **rooms**. Each takes a standard rate and, optionally, a
-      discounted rate; the discounted one becomes the headline price and the
-      standard is struck through beside it. Leave the discount empty to quote
-      one price. Tick `featured` on exactly one.
-- [ ] Set the hall's `kind` to **Event hall**. That keeps it out of the room
-      grid, prices it per day, and gives it its own block on `/rooms`.
-- [ ] Add **menu items** with `section` set to `restaurant`, `lounge`,
-      `laundry` or `transport` (car hire). All four lists were entered from the
-      tariff sheet and should match already.
+```bash
+node scripts/seed-to-ndjson.mjs > seed.ndjson
+npx sanity dataset import seed.ndjson production --replace
+```
+
+That writes 216 documents: the Site Settings singleton, the six rooms and the
+hall, and all 208 priced items. Document ids match the ones `seed.ts` already
+uses, so running it twice updates rather than duplicates, and `--replace` is
+safe to repeat.
+
+Photographs are deliberately **not** uploaded by the import. Every one is an
+Unsplash stand-in of another building, so they travel as `standInPhoto` ids
+that an editor can clear from Studio; uploading a real photo over the top
+replaces them automatically.
+
+What still needs a human afterwards:
+
 - [ ] Fill in room sizes and bed types once the hotel confirms them. They are
       empty on purpose rather than guessed.
 - [ ] Upload real photographs. A Sanity image always beats the Unsplash

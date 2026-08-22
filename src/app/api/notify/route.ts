@@ -70,16 +70,75 @@ const Payload = z.discriminatedUnion("type", [
   }),
 ]);
 
-// ponytail: in-memory bucket, so it resets per serverless instance. Enough to
-// stop a naive flood; swap for Upstash if this ever gets targeted properly.
+/**
+ * Two limits, because they stop different things.
+ *
+ * Per IP catches one person hammering the form. The global budget catches a
+ * distributed flood, and it is the one that matters most: Telegram refuses
+ * more than roughly twenty messages a minute into a single chat, so without a
+ * ceiling a flood does not merely spam the group, it wedges it, and real
+ * bookings stop arriving while the desk sees nothing wrong.
+ *
+ * Both live in instance memory, so they reset per lambda and are best effort
+ * by nature. The edge rule in the Vercel firewall is the real defence; this is
+ * the floor underneath it, and the part that protects Telegram specifically.
+ */
+const WINDOW = 60_000;
+/** Both are tunable without a deploy, and settable low to test the ceilings. */
+const PER_IP = Number(process.env.NOTIFY_LIMIT_PER_IP ?? 6);
+/** Messages, not requests: one mixed order sends three. Kept under Telegram's
+ *  own per-chat ceiling so the group can never be talked into silence. */
+const GLOBAL_MESSAGES = Number(process.env.NOTIFY_LIMIT_GLOBAL ?? 18);
+
 const hits = new Map<string, number[]>();
-function rateLimited(ip: string) {
+/** When each message actually reached Telegram, newest last. */
+const sent: number[] = [];
+
+const fresh = (times: number[], now: number) => times.filter((t) => now - t < WINDOW);
+
+/** Returns the reason a request is refused, or null to let it through. */
+function rateLimited(ip: string): "ip" | "global" | null {
   const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < 60_000);
+
+  // Prune expired entries rather than emptying the table. The previous version
+  // called hits.clear() once it held 5,000 keys, which reset the attacker's own
+  // counter along with everyone else's — an eviction that rewarded the flood.
+  if (hits.size > 5_000) {
+    for (const [key, times] of hits) {
+      const live = fresh(times, now);
+      if (live.length) hits.set(key, live);
+      else hits.delete(key);
+    }
+  }
+
+  // Checked before the per-IP bucket so a spread-out flood is caught too.
+  // Anything already accepted runs to completion: refusing here, rather than
+  // part-way through sending, is what stops an order arriving half-delivered.
+  const live = fresh(sent, now);
+  sent.length = 0;
+  sent.push(...live);
+  if (live.length >= GLOBAL_MESSAGES) return "global";
+
+  const recent = fresh(hits.get(ip) ?? [], now);
+  if (recent.length >= PER_IP) return "ip";
+
   recent.push(now);
-  if (hits.size > 5_000) hits.clear();
   hits.set(ip, recent);
-  return recent.length > 6;
+  return null;
+}
+
+/**
+ * The client can put anything in x-forwarded-for, so the platform's own header
+ * is preferred: reading the left-most forwarded value first let a determined
+ * sender rotate a header string and get a clean bucket every time.
+ */
+function clientIp(request: Request) {
+  return (
+    request.headers.get("x-vercel-forwarded-for") ??
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown"
+  );
 }
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -98,6 +157,9 @@ async function sendToTelegram(text: string, threadId?: string) {
     }),
   });
   if (!res.ok) throw new Error(`Telegram ${res.status}: ${await res.text()}`);
+  // Counted here rather than at the door, because this is the number Telegram
+  // actually meters: one submission can be one message or three.
+  sent.push(Date.now());
 }
 
 const stamp = () =>
@@ -115,9 +177,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (rateLimited(ip)) {
-    return NextResponse.json({ ok: false, error: "Too many requests. Try again shortly." }, { status: 429 });
+  const limited = rateLimited(clientIp(request));
+  if (limited) {
+    // Deliberately the same wording either way. Telling a flood which ceiling
+    // it hit tells it which one to work around.
+    return NextResponse.json(
+      { ok: false, error: "Too many requests. Try again shortly." },
+      { status: 429, headers: { "retry-after": "60" } },
+    );
   }
 
   const parsed = Payload.safeParse(await request.json().catch(() => null));

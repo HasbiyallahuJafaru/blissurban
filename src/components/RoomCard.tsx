@@ -4,7 +4,19 @@ import { useRef, useState } from "react";
 import { picture, unsplash, type Source } from "@/sanity/lib/image";
 import type { Room } from "@/sanity/lib/types";
 import { Plate } from "./Plate";
-import { ReservationForm } from "./forms/ReservationForm";
+import dynamic from "next/dynamic";
+
+/**
+ * Every room medallion carries its own booking modal, so the page was shipping
+ * six identical forms plus the hall's — seven sets of date fields nobody can
+ * reach until a modal opens, and only ever one at a time. Loading the form on
+ * demand keeps its markup and its JavaScript off the page until it is asked
+ * for.
+ */
+const ReservationForm = dynamic(
+  () => import("./forms/ReservationForm").then((m) => m.ReservationForm),
+  { loading: () => <p className="py-10 text-center text-sm text-ink-3">Loading the form...</p> },
+);
 import { ArrowRight, CloseButton, PillButton, Rate, dialogClass, unitFor } from "./ui";
 
 /**
@@ -27,6 +39,8 @@ export function RoomCard({
   const viewer = useRef<HTMLDialogElement>(null);
   const booking = useRef<HTMLDialogElement>(null);
   const [active, setActive] = useState(0);
+  // Flipped the first time the booking modal opens, and never back.
+  const [bookingOpened, setBookingOpened] = useState(false);
 
   const cover = picture(room.image, room.photo, 900);
 
@@ -49,6 +63,7 @@ export function RoomCard({
 
   function openBooking() {
     viewer.current?.close();
+    setBookingOpened(true);
     booking.current?.showModal();
   }
 
@@ -188,7 +203,7 @@ export function RoomCard({
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
               {/* only this room, so the select is already the right one */}
-              <ReservationForm rooms={[room]} whatsapp={whatsapp} />
+              {bookingOpened ? <ReservationForm rooms={[room]} whatsapp={whatsapp} /> : null}
             </div>
           </div>
         </div>

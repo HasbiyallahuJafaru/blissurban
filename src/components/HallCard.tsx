@@ -1,10 +1,22 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { picture } from "@/sanity/lib/image";
 import type { Room } from "@/sanity/lib/types";
 import { Plate } from "./Plate";
-import { ReservationForm } from "./forms/ReservationForm";
+import dynamic from "next/dynamic";
+
+/**
+ * Every room medallion carries its own booking modal, so the page was shipping
+ * six identical forms plus the hall's — seven sets of date fields nobody can
+ * reach until a modal opens, and only ever one at a time. Loading the form on
+ * demand keeps its markup and its JavaScript off the page until it is asked
+ * for.
+ */
+const ReservationForm = dynamic(
+  () => import("./forms/ReservationForm").then((m) => m.ReservationForm),
+  { loading: () => <p className="py-10 text-center text-sm text-ink-3">Loading the form...</p> },
+);
 import { ArrowRight, CloseButton, Eyebrow, PillButton, Rate, dialogClass, unitFor } from "./ui";
 
 /**
@@ -15,6 +27,7 @@ import { ArrowRight, CloseButton, Eyebrow, PillButton, Rate, dialogClass, unitFo
  */
 export function HallCard({ hall, whatsapp }: { hall: Room; whatsapp: string }) {
   const booking = useRef<HTMLDialogElement>(null);
+  const [bookingOpened, setBookingOpened] = useState(false);
 
   return (
     <>
@@ -48,7 +61,12 @@ export function HallCard({ hall, whatsapp }: { hall: Room; whatsapp: string }) {
 
           <div className="foil-t mt-9 flex flex-wrap items-end justify-between gap-6 pt-7">
             <Rate room={hall} className="text-[2.2rem] text-ink" unit={unitFor(hall)} />
-            <PillButton onClick={() => booking.current?.showModal()}>
+            <PillButton
+              onClick={() => {
+                setBookingOpened(true);
+                booking.current?.showModal();
+              }}
+            >
               Ask about the hall
               <ArrowRight />
             </PillButton>
@@ -82,7 +100,7 @@ export function HallCard({ hall, whatsapp }: { hall: Room; whatsapp: string }) {
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-              <ReservationForm rooms={[hall]} whatsapp={whatsapp} />
+              {bookingOpened ? <ReservationForm rooms={[hall]} whatsapp={whatsapp} /> : null}
             </div>
           </div>
         </div>

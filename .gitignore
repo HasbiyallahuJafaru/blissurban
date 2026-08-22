@@ -43,3 +43,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# generated from seed.ts on demand
+seed.ndjson

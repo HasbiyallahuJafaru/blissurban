@@ -1,8 +1,8 @@
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import { dataset, projectId, sanityReady } from "../env";
 import type { SanityImage } from "./types";
 
-const builder = sanityReady ? imageUrlBuilder({ projectId, dataset }) : null;
+const builder = sanityReady ? createImageUrlBuilder({ projectId, dataset }) : null;
 
 /**
  * One image, ready for an <img>. `srcSet` lets the browser pick a size, so a
