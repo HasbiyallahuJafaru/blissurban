@@ -65,33 +65,47 @@ export function MenuSection({
 
   return (
     <>
-      {/* masthead: type hard left, plate running off the right edge */}
-      <section className="mx-auto max-w-380 px-5 pt-14 lg:pl-12 lg:pr-0 lg:pt-20">
-        <div className="grid items-end gap-12 lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-6">
-            <Eyebrow className="text-gold-deep">{eyebrow}</Eyebrow>
+      {/* masthead: the photograph is the ground, full bleed, with the type laid
+          over it, the same way the home page opens. Laundry and car hire pass
+          no photo on purpose, and fall back to the plain ground rather than a
+          full-page foil panel. */}
+      <section className="relative flex min-h-[min(62svh,34rem)] flex-col justify-center overflow-hidden">
+        {heroPhoto ? (
+          <>
+            <div className="absolute inset-0">
+              <Plate
+                src={unsplash(heroPhoto, 2000)}
+                alt={`The ${section} at Bliss Urban`}
+                seed={`${section}-hero`}
+                sizes="100vw"
+                priority
+              />
+            </div>
+            {/* Two scrims: one up the page so the photograph dissolves into the
+                black the rest of the site is built on, and a flat tint so the
+                headline keeps its contrast wherever the photograph is bright. */}
+            <div aria-hidden className="absolute inset-0 bg-linear-to-t from-paper via-paper/85 to-paper/30" />
+            <div aria-hidden className="absolute inset-0 bg-paper/30" />
+          </>
+        ) : null}
+
+        <div className="relative mx-auto w-full max-w-380 px-5 pb-14 pt-32 lg:px-12 lg:pb-16 lg:pt-40">
+          <div className="text-center">
+            <Eyebrow className="justify-center text-gold-deep">{eyebrow}</Eyebrow>
             <h1 className="display mt-7 text-[clamp(2.4rem,4.4vw,3.85rem)] leading-none text-ink">
               {title}
               <em className="block font-normal italic text-gold-deep">{italic}</em>
             </h1>
-            <p className="mt-8 max-w-lg text-[0.98rem] leading-[1.8] text-ink-2">{body}</p>
           </div>
-
-          <div className="aspect-16/10 overflow-hidden rounded-l-sm border border-ink/12 lg:col-span-6 lg:aspect-5/3">
-            <Plate
-              src={heroPhoto ? unsplash(heroPhoto, 1100) : null}
-              alt={`The ${section} at Bliss Urban`}
-              seed={`${section}-hero`}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              priority
-            />
-          </div>
+          <p className="mt-8 max-w-lg text-[0.98rem] leading-[1.8] text-ink-2">{body}</p>
         </div>
+      </section>
 
+      <section className="mx-auto max-w-380 px-5 lg:px-12">
         {/* In cards layout the cards below are the navigation, so a second
             list of the same category names would only repeat itself. */}
         {cards ? (
-          <div className="foil-t mt-16 pt-7 lg:pr-12">
+          <div className="foil-t pt-7">
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-ink-2">
               {groups.length} sections. Open one to see what is in it.
             </p>
@@ -99,7 +113,7 @@ export function MenuSection({
         ) : (
           <nav
             aria-label="Menu categories"
-            className="foil-t mt-16 flex flex-wrap gap-x-8 gap-y-3 pt-7 lg:pr-12"
+            className="foil-t flex flex-wrap gap-x-8 gap-y-3 pt-7"
           >
             {groups.map((g, i) => (
               <a

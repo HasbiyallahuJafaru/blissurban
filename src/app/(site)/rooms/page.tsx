@@ -26,12 +26,14 @@ export default async function RoomsPage() {
       <JsonLd data={roomsSchema(rooms)} />
       <JsonLd data={breadcrumbSchema("Rooms & Suites", "/rooms")} />
       <section className="mx-auto max-w-380 px-5 pt-14 lg:px-12 lg:pt-20">
-        <div className="max-w-2xl">
-          <Eyebrow className="text-gold-deep">{bedrooms.length} room types</Eyebrow>
+        <div className="text-center">
+          <Eyebrow className="justify-center text-gold-deep">{bedrooms.length} room types</Eyebrow>
           <h1 className="display mt-7 text-[clamp(2.6rem,5.4vw,4.2rem)] leading-none text-ink">
             Comfort at its best,
             <em className="block font-normal italic text-gold-deep">whatever your budget.</em>
           </h1>
+        </div>
+        <div className="max-w-2xl">
           <p className="mt-8 text-[0.98rem] leading-[1.8] text-ink-2">
             Whatever you can spend, you sleep well here. We look after every room the same way, so the
             smallest of them still feels like somewhere you chose rather than somewhere you settled
