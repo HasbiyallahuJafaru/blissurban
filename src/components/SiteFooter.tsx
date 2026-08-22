@@ -57,10 +57,10 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
 
         {COLUMNS.map((col) => (
           <div key={col.title} className="hidden lg:block">
-            <h3 className="flex items-center gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-gold-bright">
+            <h2 className="flex items-center gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-gold-bright">
               <Knot />
               {col.title}
-            </h3>
+            </h2>
             <ul className="mt-6 space-y-3">
               {col.links.map((l, i) => (
                 <li key={i}>
@@ -74,10 +74,10 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
         ))}
 
         <div className="text-center lg:text-left">
-          <h3 className="flex items-center justify-center gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-gold-bright lg:justify-start">
+          <h2 className="flex items-center justify-center gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-gold-bright lg:justify-start">
             <Knot />
             Front desk
-          </h3>
+          </h2>
 
           <address className="mt-6 space-y-3 text-sm not-italic leading-[1.7] text-ink-2">
             <p>{settings.address}</p>

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Rooms & Suites",
   alternates: { canonical: "/rooms" },
   description:
-    "Six room categories from Bliss Standard to the Classic Presidential Suite, plus a hall for events, in Barnawa, Kaduna. Twenty-four hour power, fibre Wi-Fi, secure parking.",
+    "Six room types from Bliss Standard to the Classic Presidential Suite, plus a hall for events, in Barnawa, Kaduna. Every rate published.",
 };
 
 export default async function RoomsPage() {

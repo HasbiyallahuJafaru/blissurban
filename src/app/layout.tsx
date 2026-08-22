@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s — Bliss Urban Hotels & Suites",
   },
   description:
-    "A business hotel in Barnawa, Kaduna. Twenty-four hour power, secure parking, fibre Wi-Fi, and a kitchen open until midnight. Request a room, order food, or book a table in the lounge.",
+    "A business hotel in Barnawa, Kaduna. Twenty-four hour power, secure parking, fibre Wi-Fi, and a kitchen open till midnight.",
   openGraph: {
     type: "website",
     locale: "en_NG",
