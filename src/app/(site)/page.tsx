@@ -4,7 +4,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Plate } from "@/components/Plate";
 import { ArrowRight, Eyebrow, Eyelet, Icon, PillLink, Rate, SectionHead, unitFor } from "@/components/ui";
 import { getRooms, getSettings } from "@/sanity/lib/fetch";
-import { picture, unsplash } from "@/sanity/lib/image";
+import { imageUrl, picture, unsplash } from "@/sanity/lib/image";
 import { hotelSchema } from "@/lib/seo";
 
 export const revalidate = 60;
@@ -60,7 +60,17 @@ const SECTIONS = [
    deliberately not the featured room, or the two sections show the same bed.
    Bliss Luxury became the featured room with the tariff sheet, so this moved
    off the id that room now carries. */
-const HERO_PHOTO = "photo-1566665797739-1674de7a421a";
+/**
+ * The hotel's own photograph, at four widths so a phone does not pull the
+ * desktop render. Generated from the camera original, which arrives from an
+ * iPhone as HEIC and cannot be displayed by Chrome, Firefox or Edge.
+ */
+const HERO_LOCAL = {
+  src: "/hero-2400.jpg",
+  srcSet: [640, 1024, 1600, 2400].map((w) => `/hero-${w}.jpg ${w}w`).join(", "),
+  width: 2400,
+  height: 1800,
+};
 /* Dark and warm, so it sits on the ink band instead of punching a white
    hole in it. Checked against the other candidates before picking. */
 const PROMO_PHOTO = "photo-1414235077428-338989a2e8c0";
@@ -82,7 +92,7 @@ export default async function HomePage() {
       <section className="relative flex min-h-[min(88svh,48rem)] flex-col justify-center overflow-hidden">
         <div className="absolute inset-0">
           <Plate
-            src={picture(settings.heroImage, settings.heroStandIn ?? HERO_PHOTO, 2000)}
+            src={imageUrl(settings.heroImage, 2000) ?? HERO_LOCAL}
             alt="Inside Bliss Urban Hotels & Suites, Barnawa"
             seed="bliss-hero"
             priority

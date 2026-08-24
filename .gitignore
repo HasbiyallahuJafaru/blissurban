@@ -52,3 +52,7 @@ __pycache__/
 
 # dataset snapshots taken before migrations
 backup-*.tar.gz
+
+# camera original: HEIC, which browsers cannot display. Kept locally as the
+# source for the generated hero-*.jpg files, never shipped.
+*.heic
