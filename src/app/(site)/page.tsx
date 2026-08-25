@@ -41,7 +41,7 @@ const SECTIONS = [
     note: "Pepper soups and rice, sent up to your room.",
     offset: "lg:mt-14",
     image: "restaurantImage",
-    photo: "photo-1504674900247-0877df9cc836",
+    photo: undefined,
   },
   {
     href: "/lounge",

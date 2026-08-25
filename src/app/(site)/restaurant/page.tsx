@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { MenuSection } from "@/components/MenuSection";
-import { getMenu } from "@/sanity/lib/fetch";
+import { getMenu, getSettings } from "@/sanity/lib/fetch";
+import { imageUrl } from "@/sanity/lib/image";
 import { SITE, breadcrumbSchema, menuSchema } from "@/lib/seo";
 
 export const revalidate = 60;
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RestaurantPage() {
-  const items = await getMenu("restaurant");
+  const [items, settings] = await Promise.all([getMenu("restaurant"), getSettings()]);
 
   return (
     <>
@@ -25,7 +26,7 @@ export default async function RestaurantPage() {
            wall, so the courses open one at a time. */
         layout="cards"
         noun="dish"
-        heroPhoto="photo-1504674900247-0877df9cc836"
+        heroSrc={imageUrl(settings.restaurantImage, 2000)}
         eyebrow="Ground floor, from 07:00"
         title="Pepper soup, the way"
         italic="it should taste."
