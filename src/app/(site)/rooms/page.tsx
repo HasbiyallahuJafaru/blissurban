@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { HallCard } from "@/components/HallCard";
+import { Plate } from "@/components/Plate";
 import { JsonLd } from "@/components/JsonLd";
 import { RoomCard } from "@/components/RoomCard";
 import { Eyebrow, Knot } from "@/components/ui";
 import { getRooms, getSettings } from "@/sanity/lib/fetch";
+import { imageUrl } from "@/sanity/lib/image";
 import { breadcrumbSchema, roomsSchema } from "@/lib/seo";
 
 export const revalidate = 60;
@@ -25,7 +27,22 @@ export default async function RoomsPage() {
     <>
       <JsonLd data={roomsSchema(rooms)} />
       <JsonLd data={breadcrumbSchema("Rooms & Suites", "/rooms")} />
-      <section className="mx-auto max-w-380 px-5 pt-14 lg:px-12 lg:pt-20">
+      {/* The photograph that used to open the home page now opens this one,
+          the same full-bleed treatment with the type laid over it. */}
+      <section className="relative flex min-h-[min(62svh,34rem)] flex-col justify-center overflow-hidden">
+        <div className="absolute inset-0">
+          <Plate
+            src={imageUrl(settings.heroImage, 2000)}
+            alt="A room at Bliss Urban Hotels & Suites, Barnawa"
+            seed="bliss-rooms-hero"
+            sizes="100vw"
+            priority
+          />
+        </div>
+        <div aria-hidden className="absolute inset-0 bg-linear-to-t from-paper via-paper/85 to-paper/30" />
+        <div aria-hidden className="absolute inset-0 bg-paper/30" />
+
+        <div className="relative mx-auto w-full max-w-380 px-5 pb-14 pt-32 lg:px-12 lg:pb-16 lg:pt-40">
         <div className="text-center">
           <Eyebrow className="justify-center text-gold-deep">{bedrooms.length} room types</Eyebrow>
           <h1 className="display mt-7 text-[clamp(2.6rem,5.4vw,4.2rem)] leading-none text-ink">
@@ -40,6 +57,7 @@ export default async function RoomsPage() {
             for. Go higher and the space opens up and the quiet gets deeper. Open any room to see it
             properly, and when you ask for one, a person calls you back.
           </p>
+        </div>
         </div>
       </section>
 

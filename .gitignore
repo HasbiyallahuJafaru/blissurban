@@ -56,3 +56,13 @@ backup-*.tar.gz
 # camera original: HEIC, which browsers cannot display. Kept locally as the
 # source for the generated hero-*.jpg files, never shipped.
 *.heic
+
+# camera originals: HEIC despite the .jpeg name, unreadable in most browsers.
+# Converted copies live in Sanity; these stay local.
+public/IMG_*.jpeg
+
+# camera original: 4K60 at 62Mbps. The encoded hero-720/1080 files ship instead.
+public/hero.mp4
+
+# working directory for converting camera files before upload
+.roompics/

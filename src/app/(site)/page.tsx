@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { HeroVideo } from "@/components/HeroVideo";
 import { JsonLd } from "@/components/JsonLd";
 import { Plate } from "@/components/Plate";
 import { ArrowRight, Eyebrow, Eyelet, Icon, PillLink, Rate, SectionHead, unitFor } from "@/components/ui";
@@ -91,11 +92,9 @@ export default async function HomePage() {
           whatever the photograph happens to be doing. */}
       <section className="relative flex min-h-[min(88svh,48rem)] flex-col justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <Plate
-            src={imageUrl(settings.heroImage, 2000) ?? HERO_LOCAL}
+          <HeroVideo
+            poster={imageUrl(settings.heroImage, 2000) ?? HERO_LOCAL}
             alt="Inside Bliss Urban Hotels & Suites, Barnawa"
-            seed="bliss-hero"
-            priority
           />
         </div>
         {/* Two scrims, both symmetric now the type is centred: one up the page
