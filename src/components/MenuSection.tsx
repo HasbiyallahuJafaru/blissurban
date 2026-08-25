@@ -5,7 +5,7 @@ import { MenuRow } from "./MenuRow";
 import { Plate } from "./Plate";
 import { Eyebrow } from "./ui";
 import { step } from "@/lib/format";
-import { unsplash } from "@/sanity/lib/image";
+import { unsplash, type Source } from "@/sanity/lib/image";
 import { categoryOrder } from "@/sanity/lib/seed";
 import type { MenuItem, Section } from "@/sanity/lib/types";
 
@@ -29,6 +29,7 @@ export function MenuSection({
   italic,
   body,
   heroPhoto,
+  heroSrc,
   orderable = true,
   layout = "list",
   noun,
@@ -41,7 +42,10 @@ export function MenuSection({
   italic: string;
   body: string;
   /** Unsplash id, a stand-in until the hotel supplies its own photography. */
+  /** Unsplash id, used only until a real photograph exists. */
   heroPhoto?: string;
+  /** The hotel's own photograph, from Sanity. Wins over heroPhoto. */
+  heroSrc?: Source | null;
   /**
    * False turns the list into a published price table with no Add buttons and
    * no cart bar. Car hire uses it: a ride is booked through the form below,
@@ -70,11 +74,11 @@ export function MenuSection({
           no photo on purpose, and fall back to the plain ground rather than a
           full-page foil panel. */}
       <section className="relative flex min-h-[min(62svh,34rem)] flex-col justify-center overflow-hidden">
-        {heroPhoto ? (
+        {heroSrc || heroPhoto ? (
           <>
             <div className="absolute inset-0">
               <Plate
-                src={unsplash(heroPhoto, 2000)}
+                src={heroSrc ?? (heroPhoto ? unsplash(heroPhoto, 2000) : null)}
                 alt={`The ${section} at Bliss Urban`}
                 seed={`${section}-hero`}
                 sizes="100vw"

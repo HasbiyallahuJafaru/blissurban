@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { MenuSection } from "@/components/MenuSection";
-import { getMenu } from "@/sanity/lib/fetch";
+import { getMenu, getSettings } from "@/sanity/lib/fetch";
+import { imageUrl } from "@/sanity/lib/image";
 import { SITE, breadcrumbSchema, menuSchema } from "@/lib/seo";
 
 export const revalidate = 60;
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LoungePage() {
-  const items = await getMenu("lounge");
+  const [items, settings] = await Promise.all([getMenu("lounge"), getSettings()]);
 
   return (
     <>
@@ -25,7 +26,7 @@ export default async function LoungePage() {
            Same treatment as the restaurant: open one shelf at a time. */
         layout="cards"
         noun="drink"
-        heroPhoto="photo-1544148103-0773bf10d330"
+        heroSrc={imageUrl(settings.loungeImage, 2000)}
         eyebrow="Open until late"
         title="Somewhere to sit"
         italic="when the day is done."

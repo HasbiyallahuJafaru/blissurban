@@ -68,6 +68,11 @@ export type SiteSettings = {
   heroHeadlineItalic: string;
   heroBody: string;
   heroImage: SanityImage;
+  /** Masthead photographs for the four priced-list pages. */
+  restaurantImage?: SanityImage;
+  loungeImage?: SanityImage;
+  laundryImage?: SanityImage;
+  transportImage?: SanityImage;
   /** Unsplash id, used only until a real hero photo exists. */
   heroStandIn?: string;
   amenities: Amenity[];

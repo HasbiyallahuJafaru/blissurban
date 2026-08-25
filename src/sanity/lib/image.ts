@@ -45,7 +45,7 @@ function widths(target: number, native?: number) {
 }
 
 /** Sanity's CDN does the resizing, so next/image never has to. */
-export function imageUrl(source: SanityImage, width: number): Source | null {
+export function imageUrl(source: SanityImage | undefined, width: number): Source | null {
   if (!builder || !source?.asset?._ref) return null;
 
   const native = nativeSize(source.asset._ref);

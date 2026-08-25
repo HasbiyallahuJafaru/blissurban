@@ -30,6 +30,7 @@ const siteSettings = defineType({
     { name: "amenities", title: "Amenities" },
     { name: "policies", title: "House rules" },
     { name: "promo", title: "Promo band" },
+    { name: "sections", title: "Section photos" },
   ],
   fields: [
     defineField({ name: "phone", type: "string", group: "contact", description: "Shown in the header and footer." }),
@@ -89,6 +90,17 @@ const siteSettings = defineType({
       group: "policies",
       description: "The Special Notice from the tariff sheet. Shown on the Rooms page.",
     }),
+
+    defineField({
+      ...image,
+      name: "restaurantImage",
+      title: "Restaurant photo",
+      group: "sections",
+      description: "Opens the restaurant page. Falls back to a stand-in until one is uploaded.",
+    }),
+    defineField({ ...image, name: "loungeImage", title: "Lounge photo", group: "sections" }),
+    defineField({ ...image, name: "laundryImage", title: "Laundry photo", group: "sections" }),
+    defineField({ ...image, name: "transportImage", title: "Car hire photo", group: "sections" }),
 
     defineField({ name: "promoEyebrow", type: "string", group: "promo" }),
     defineField({ name: "promoHeading", type: "string", group: "promo" }),
