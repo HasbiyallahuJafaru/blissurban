@@ -19,33 +19,44 @@ export const metadata: Metadata = {
  * and car hire carry no `photo`: there is no honest stand-in for either, so
  * Plate draws its rosette instead of borrowing a picture of a bedroom.
  */
+/**
+ * Each medallion shows the same photograph as the page it opens, so the home
+ * page is a set of doorways rather than a separate gallery to keep in step.
+ * `image` names the Sanity field the page's masthead reads; `photo` is the
+ * borrowed stand-in that page still falls back to, and is dropped as soon as
+ * the hotel uploads its own.
+ */
 const SECTIONS = [
   {
     href: "/rooms",
     label: "Rooms & Suites",
     note: "Six categories, from the Standard to the Classic Presidential.",
     offset: "lg:mt-0",
-    photo: "photo-1582719478250-c89cae4dc85b",
+    image: "heroImage",
+    photo: undefined,
   },
   {
     href: "/restaurant",
     label: "Restaurant",
     note: "Pepper soups and rice, sent up to your room.",
     offset: "lg:mt-14",
-    photo: "photo-1517248135467-4c7edcad34c4",
+    image: "restaurantImage",
+    photo: "photo-1504674900247-0877df9cc836",
   },
   {
     href: "/lounge",
     label: "Lounge",
     note: "Somewhere to sit when the meetings are done.",
     offset: "lg:mt-5",
-    photo: "photo-1514933651103-005eec06c04b",
+    image: "loungeImage",
+    photo: undefined,
   },
   {
     href: "/laundry",
     label: "Laundry",
     note: "Washing, ironing and starching, priced by the piece.",
     offset: "lg:mt-16",
+    image: "laundryImage",
     photo: undefined,
   },
   {
@@ -53,9 +64,10 @@ const SECTIONS = [
     label: "Car Hire",
     note: "Fixed fares to the airport, Zaria, Kano and Abuja.",
     offset: "lg:mt-7",
+    image: "transportImage",
     photo: undefined,
   },
-];
+] as const;
 
 /* Stand-ins until the hotel supplies its own photography. The hero is
    deliberately not the featured room, or the two sections show the same bed.
@@ -176,7 +188,7 @@ export default async function HomePage() {
                 <div className="mx-auto aspect-square w-full max-w-72 overflow-hidden rounded-full border border-gold/40 p-1.5 transition duration-300 group-hover:border-gold/80">
                   <div className="size-full overflow-hidden rounded-full">
                     <Plate
-                      src={s.photo ? unsplash(s.photo, 700) : null}
+                      src={imageUrl(settings[s.image], 700) ?? (s.photo ? unsplash(s.photo, 700) : null)}
                       alt={s.label}
                       seed={s.label}
                       sizes="(min-width: 1024px) 18rem, (min-width: 640px) 30vw, 45vw"
