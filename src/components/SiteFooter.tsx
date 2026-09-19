@@ -113,6 +113,15 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
           <p>© {new Date().getFullYear()} Bliss Urban Hotels &amp; Suites Ltd, Barnawa, Kaduna.</p>
           <p>Bookings and orders are confirmed by a person, not automatically.</p>
         </div>
+
+        <div className="mx-auto max-w-380 px-5 pb-6 text-center text-ink lg:px-12 lg:text-left">
+          <a
+            href="https://hasbiyallahu.xyz"
+            className="text-[11px] opacity-50 transition-opacity hover:opacity-100"
+          >
+            Site by Hasbiyallahu
+          </a>
+        </div>
       </div>
     </footer>
   );
