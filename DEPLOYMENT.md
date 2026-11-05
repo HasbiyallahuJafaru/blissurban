@@ -277,28 +277,29 @@ Add the apex and `www` separately if you use both. Sanity matches origins
 exactly, so `https://blissurbanhotels.com` does not cover
 `https://www.blissurbanhotels.com`.
 
-**Webhook.** GROQ-powered webhooks cannot be created from the CLI. `sanity
-hooks create` in the current CLI does not prompt for anything — it only opens
-the manage UI in a browser — and the public `api.sanity.io/hooks` endpoint
-creates legacy webhooks only, which do not send the signature header that
-`parseBody` in `src/app/api/revalidate/route.ts` verifies.
+**Webhook.** Already created (id `UlWmwfntBY8v8max`, "Revalidate site"). `sanity
+hooks create` only opens the browser, but the Hooks API creates GROQ-powered
+webhooks directly when the body says `"type": "document"`, using the CLI's
+login token from `~/.config/sanity/config.json`:
 
-So this one is done in the browser:
-
-**https://www.sanity.io/organizations/oe6RsRFOa/project/9225tb8w/api/webhooks/new**
+```
+POST https://api.sanity.io/v2021-10-04/hooks/projects/9225tb8w
+```
 
 | Field | Value |
 |---|---|
-| Name | `Revalidate site` |
-| URL | `https://blissurbanhotels.com/api/revalidate` |
-| Dataset | `production` |
-| Trigger on | Create, Update, Delete |
-| Filter | `_type in ["siteSettings", "room", "menuItem"]` |
-| Projection | leave empty |
-| Status | Enabled |
-| HTTP method | `POST` |
-| API version | `v2021-03-25` |
-| Secret | the `SANITY_REVALIDATE_SECRET` value in `.env.local` |
+| `name` | `Revalidate site` |
+| `url` | `https://blissurbanhotels.com/api/revalidate` |
+| `dataset` | `production` |
+| `rule.on` | `["create", "update", "delete"]` |
+| `rule.filter` | `_type in ["siteSettings", "room", "restaurantItem", "loungeItem", "laundryItem", "transportItem"]` |
+| `rule.projection` | `{_type}` (the route reads nothing else) |
+| `httpMethod` | `POST` |
+| `apiVersion` | `v2021-03-25` |
+| `secret` | the `SANITY_REVALIDATE_SECRET` value, identical in `.env.local` and Vercel |
+
+Changing the secret means changing it in three places: `.env.local`, Vercel
+(then redeploy), and the webhook.
 
 Afterwards the CLI can still inspect it:
 
