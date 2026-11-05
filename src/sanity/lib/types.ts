@@ -27,6 +27,27 @@ export type Room = {
 /** What a guest actually pays, and what the site quotes everywhere. */
 export const rate = (room: Room) => room.discountedPrice ?? room.price;
 
+/**
+ * Added to a room's rate, as columns on the tariff sheet. The hall carries
+ * none. "Single person" applies only when one guest has the room.
+ */
+const CHARGES = [
+  { label: "VAT 7.5%", share: 0.075 },
+  { label: "Service charge 5%", share: 0.05 },
+  { label: "Single person 2%", share: 0.02, single: true },
+];
+
+export const CHARGES_NOTE = "Plus 7.5% VAT and 5% service charge, and 2% when one guest has the room.";
+
+/** The charges owed on `amount` (rate × nights) for this booking. */
+export const charges = (kind: Room["kind"], guests: number, amount: number) =>
+  kind === "hall"
+    ? []
+    : CHARGES.filter((c) => !c.single || guests === 1).map((c) => ({
+        label: c.label,
+        amount: Math.round(amount * c.share),
+      }));
+
 /** True when the rack rate is worth showing struck through beside the rate. */
 export const isReduced = (room: Room) =>
   typeof room.discountedPrice === "number" && room.discountedPrice < room.price;

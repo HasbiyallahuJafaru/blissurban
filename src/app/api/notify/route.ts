@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { asDate, asTime, naira, nightsBetween } from "@/lib/format";
 import { priceList } from "@/sanity/lib/fetch";
+import { charges } from "@/sanity/lib/types";
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -234,9 +235,13 @@ export async function POST(request: Request) {
       // message rather than in somebody's head.
       const nights = nightsBetween(data.checkIn, data.checkOut);
       const unit = hall ? "day" : "night";
+      const base = room.price * nights;
+      const extra = charges(room.kind, data.guests, base);
       const stay = nights
         ? `\n<b>${hall ? "Days" : "Nights"}:</b> ${nights}` +
-          `\n<b>Total:</b> ${naira(room.price * nights)}  <i>(${nights} × ${naira(room.price)})</i>`
+          `\n<b>Rate:</b> ${naira(base)}  <i>(${nights} × ${naira(room.price)})</i>` +
+          extra.map((c) => `\n<b>${c.label}:</b> ${naira(c.amount)}`).join("") +
+          `\n<b>Total:</b> ${naira(base + extra.reduce((sum, c) => sum + c.amount, 0))}`
         : `\n<b>Total:</b> <i>dates unclear, confirm with the guest</i>`;
 
       await sendToTelegram(

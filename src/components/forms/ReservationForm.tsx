@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { naira, asDate, asTime } from "@/lib/format";
-import { rate, type Room } from "@/sanity/lib/types";
+import { CHARGES_NOTE, rate, type Room } from "@/sanity/lib/types";
 import { PillButton, unitFor } from "../ui";
 import { DateInput, TimeInput, Field, Honeypot, Input, Result, Select, Textarea, postNotify, nowMs, type Submission } from "./fields";
 
@@ -94,7 +94,7 @@ export function ReservationForm({ rooms, whatsapp }: { rooms: Room[]; whatsapp: 
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <Field label={hall ? "Booking" : "Room type"}>
+          <Field label={hall ? "Booking" : "Room type"} hint={hall ? undefined : CHARGES_NOTE}>
             {/* RoomCard's modal sets this by id when someone picks a room there. */}
             <Select
               id="roomId"

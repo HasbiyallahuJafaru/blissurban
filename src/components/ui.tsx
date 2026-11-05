@@ -141,8 +141,8 @@ export function Rate({ room, className = "", unit }: { room: Room; className?: s
   );
 }
 
-/** Halls are hired by the day, rooms by the night. */
-export const unitFor = (room: Room) => (room.kind === "hall" ? "per day" : "per night");
+/** Halls are hired by the day, rooms by the night, and only rooms carry charges. */
+export const unitFor = (room: Room) => (room.kind === "hall" ? "per day" : "per night, plus taxes");
 
 export function Tag({ children }: { children: ReactNode }) {
   return (
