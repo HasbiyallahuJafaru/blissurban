@@ -49,9 +49,11 @@ cp .env.example .env.local     # works with everything left blank
 npm run dev
 ```
 
-The site is fully browsable with no credentials at all. Every Sanity read falls back
-to `src/sanity/lib/seed.ts`, and a "demo content" ribbon shows while that fallback is
-in use. Add a Sanity project id and the ribbon disappears.
+Sanity is the only source of content: rooms, the four priced lists and Site Settings
+all live there, with nothing duplicated in code. The project id defaults to the hotel's
+(`9225tb8w`), so a fresh clone reads live content with nothing filled in. If a Sanity
+read fails, the build fails (or Next keeps serving the last good page) rather than
+showing stale prices.
 
 ```bash
 npm run build       # production build
@@ -71,8 +73,7 @@ restart the dev server, and open `/studio`. Add rooms and menu items, and create
 the one **Site Settings** document for contact details, hero copy and amenities.
 
 The dataset has to be public: the client uses `useCdn: true` with no read token,
-so a private dataset returns nothing and the site quietly falls back to seed
-content.
+so a private dataset returns nothing.
 
 There is no separate Studio deploy. Schemas live in `src/sanity/schemaTypes/`
 and ship with the app.
@@ -122,7 +123,7 @@ src/
     format.ts          naira formatting
   sanity/
     schemaTypes/       siteSettings, room, menuItem
-    lib/               client, image urls, fetch with seed fallback
+    lib/               client, image urls, fetch, category order
 ```
 
 `MenuSection` renders all four priced lists. Restaurant, lounge and laundry are
@@ -153,7 +154,7 @@ details rather than a dead end.
 ## Photography
 
 The site currently shows Unsplash photographs as stand-ins, hotlinked from
-`images.unsplash.com`. Their ids live in `src/sanity/lib/seed.ts` and at the top of
+`images.unsplash.com`. Their ids live in Sanity (`standInPhoto`) and at the top of
 `src/app/(site)/page.tsx`.
 
 **These are pictures of other hotels.** They are fine while the site is in

@@ -1,8 +1,8 @@
 import { createImageUrlBuilder } from "@sanity/image-url";
-import { dataset, projectId, sanityReady } from "../env";
+import { dataset, projectId } from "../env";
 import type { SanityImage } from "./types";
 
-const builder = sanityReady ? createImageUrlBuilder({ projectId, dataset }) : null;
+const builder = createImageUrlBuilder({ projectId, dataset });
 
 /**
  * One image, ready for an <img>. `srcSet` lets the browser pick a size, so a
@@ -46,7 +46,7 @@ function widths(target: number, native?: number) {
 
 /** Sanity's CDN does the resizing, so next/image never has to. */
 export function imageUrl(source: SanityImage | undefined, width: number): Source | null {
-  if (!builder || !source?.asset?._ref) return null;
+  if (!source?.asset?._ref) return null;
 
   const native = nativeSize(source.asset._ref);
   const at = (w: number) => builder.image(source).width(w).auto("format").fit("crop").url();

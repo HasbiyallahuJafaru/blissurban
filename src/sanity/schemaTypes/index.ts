@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { categoryOrder } from "../lib/seed";
+import { categoryOrder } from "../lib/categories";
 
 const image = defineField({
   name: "image",

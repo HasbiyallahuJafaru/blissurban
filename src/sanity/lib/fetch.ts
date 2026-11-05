@@ -1,9 +1,5 @@
 import { client } from "./client";
-import { sanityReady } from "../env";
-import { seedMenu, seedRooms, seedSettings } from "./seed";
 import { rate, type MenuItem, type Room, type Section, type SiteSettings } from "./types";
-
-export const isDemo = !sanityReady;
 
 const ROOM = `{_id, name, "slug": slug.current, price, discountedPrice, kind, capacity,
   size, bed, amenities, description, image, images, featured, available,
@@ -19,39 +15,28 @@ export const SECTION_TYPE: Record<Section, string> = {
 
 const ITEM = `{_id, name, price, onRequest, description, category, tags, image, available}`;
 
-/** Tags let the Sanity webhook drop exactly the pages that changed. */
-async function get<T>(query: string, tag: string, fallback: T): Promise<T> {
-  if (!client) return fallback;
-  try {
-    const data = await client.fetch<T>(query, {}, { next: { tags: [tag], revalidate: 60 } });
-    return data ?? fallback;
-  } catch (err) {
-    console.error(`Sanity fetch failed for "${tag}", serving fallback:`, err);
-    return fallback;
-  }
-}
-
-export const getSettings = () =>
-  get<SiteSettings>(`*[_type == "siteSettings"][0]`, "settings", seedSettings);
-
 /**
- * The newest publish across everything the site renders, for the sitemap.
- * Null with no CMS connected: no date at all beats a date invented at build
- * time, which tells a crawler the whole site changed on every deploy.
+ * Tags let the Sanity webhook drop exactly the pages that changed.
+ *
+ * No fallback on failure: a throw leaves Next serving the last good render,
+ * whereas stale prices baked into the code would also be what priceList()
+ * charges at checkout.
  */
+const get = <T>(query: string, tag: string) =>
+  client.fetch<T>(query, {}, { next: { tags: [tag], revalidate: 60 } });
+
+export const getSettings = () => get<SiteSettings>(`*[_type == "siteSettings"][0]`, "settings");
+
+/** The newest publish across everything the site renders, for the sitemap. */
 export const getLastModified = () =>
   get<string | null>(
-    `*[_type in ["siteSettings", "room", "menuItem"]] | order(_updatedAt desc)[0]._updatedAt`,
+    `*[_type in ["siteSettings", "room", "restaurantItem", "loungeItem", "laundryItem", "transportItem"]]
+      | order(_updatedAt desc)[0]._updatedAt`,
     "lastmod",
-    null,
   );
 
 export const getRooms = () =>
-  get<Room[]>(
-    `*[_type == "room" && available == true] | order(price asc) ${ROOM}`,
-    "rooms",
-    seedRooms,
-  );
+  get<Room[]>(`*[_type == "room" && available == true] | order(price asc) ${ROOM}`, "rooms");
 
 export const getMenu = (section: Section) =>
   get<MenuItem[]>(
@@ -60,7 +45,6 @@ export const getMenu = (section: Section) =>
     `*[_type == "${SECTION_TYPE[section]}" && available == true]
       | order(displayOrder asc, name asc) {...${ITEM}, "section": "${section}"}`,
     "menu",
-    seedMenu.filter((i) => i.section === section),
   );
 
 export type PricedItem = {

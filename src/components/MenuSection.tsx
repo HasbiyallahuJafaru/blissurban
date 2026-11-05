@@ -6,7 +6,7 @@ import { Plate } from "./Plate";
 import { Eyebrow } from "./ui";
 import { step } from "@/lib/format";
 import { unsplash, type Source } from "@/sanity/lib/image";
-import { categoryOrder } from "@/sanity/lib/seed";
+import { categoryOrder } from "@/sanity/lib/categories";
 import type { MenuItem, Section } from "@/sanity/lib/types";
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

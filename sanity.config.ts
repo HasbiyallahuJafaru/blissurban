@@ -4,7 +4,7 @@ import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 import { schemaTypes, PRICED_LIST_TYPES } from "@/sanity/schemaTypes";
-import { categoryOrder } from "@/sanity/lib/seed";
+import { categoryOrder } from "@/sanity/lib/categories";
 
 /** The section key each document type belongs to, for looking up categories. */
 const SECTION_OF: Record<string, keyof typeof categoryOrder> = {

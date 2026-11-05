@@ -10,9 +10,9 @@ real Telegram group.
 
 ## Where things stand
 
-**Works right now, with no credentials at all.** Sanity reads fall back to
-`src/sanity/lib/seed.ts`, so you can deploy today and get a working URL. A
-ribbon across the top says the photographs are stand-ins. Submitting a booking
+**Content is live in Sanity** (project `9225tb8w`, dataset `production`): the
+settings, six rooms, the hall and all 208 priced items. The project id is the
+code's default, so a deploy reads it with no Sanity variables set. Submitting a booking
 or order will fail gracefully to a pre-filled WhatsApp link, because there is
 no Telegram token yet.
 
@@ -74,8 +74,7 @@ npx sanity datasets list
 ```
 
 **The dataset must be public.** The client runs with `useCdn: true` and no read
-token, so a private dataset returns nothing and every page silently falls back
-to seed content, which looks like the site is simply ignoring your edits. If
+token, so a private dataset returns nothing and pages render empty. If
 you created it private by mistake:
 
 ```bash
@@ -143,7 +142,6 @@ vercel --prod          # first production deploy
 Vercel detects Next.js on its own. There is no build configuration to set, no
 output mode, and no install command to override.
 
-This deploy will run on seed content. That is expected.
 
 ---
 
@@ -203,7 +201,7 @@ vercel env pull .env.local
 
 | Variable | Runtime or build | Purpose |
 |---|---|---|
-| `NEXT_PUBLIC_SANITY_PROJECT_ID` | build | Blank means the site serves seed content |
+| `NEXT_PUBLIC_SANITY_PROJECT_ID` | build | Defaults to `9225tb8w` |
 | `NEXT_PUBLIC_SANITY_DATASET` | build | `production` |
 | `NEXT_PUBLIC_SANITY_API_VERSION` | build | `2026-03-01` |
 | `NEXT_PUBLIC_SITE_URL` | build | Sitemap, robots.txt, canonical URLs |
@@ -325,23 +323,23 @@ makes a price change appear in seconds instead of a minute.
 
 Open `https://blissurbanhotels.com/studio` and log in.
 
-Everything below is already in `seed.ts` and correct, and none of it has to be
-re-typed. Import it in one pass, then use Studio to edit from there:
+The hotel's tariff sheet is already imported: 216 documents, the Site Settings
+singleton, the six rooms and the hall, and all 208 priced items. Edit from
+Studio; there is no copy in the code to keep in step.
+
+Back it up before anything drastic:
 
 ```bash
-node scripts/seed-to-ndjson.mjs > seed.ndjson
-npx sanity dataset import seed.ndjson production --replace
+npx sanity dataset export production backup.tar.gz
 ```
 
-That writes 216 documents: the Site Settings singleton, the six rooms and the
-hall, and all 208 priced items. Document ids match the ones `seed.ts` already
-uses, so running it twice updates rather than duplicates, and `--replace` is
-safe to repeat.
+Photographs still on Unsplash stand-ins travel as `standInPhoto` ids that an
+editor can clear from Studio; uploading a real photo over the top replaces them
+automatically.
 
-Photographs are deliberately **not** uploaded by the import. Every one is an
-Unsplash stand-in of another building, so they travel as `standInPhoto` ids
-that an editor can clear from Studio; uploading a real photo over the top
-replaces them automatically.
+**Adding a category** (say, Desserts) takes a code change: add it to
+`src/sanity/lib/categories.ts` and deploy. That list sets the Studio dropdown,
+the Studio folders and the order on the site.
 
 What still needs a human afterwards:
 
@@ -354,10 +352,6 @@ What still needs a human afterwards:
 request" instead of a figure and refuses to let it into an order. `BBQ Fish
 with Fries or Plantain` is the one item shipped this way, because the tariff
 sheet prices it by size on the day.
-
-The demo ribbon disappears as soon as `NEXT_PUBLIC_SANITY_PROJECT_ID` is set.
-It is tied to that variable, not to whether the dataset actually has content,
-so do not leave the site pointing at an empty dataset.
 
 ---
 
@@ -426,13 +420,12 @@ so do not leave the site pointing at an empty dataset.
 
 ## Troubleshooting
 
-**Every page shows seed content and the demo ribbon.**
-`NEXT_PUBLIC_SANITY_PROJECT_ID` is unset in that build, or it was set after the
-last deploy. Redeploy.
+**The build fails prerendering with `fetch failed`.** Sanity was unreachable.
+On a Windows machine behind antivirus HTTPS scanning, build with
+`NODE_OPTIONS=--use-system-ca`.
 
-**The ribbon is gone but the content is still the old placeholder text.**
-The dataset is private, so every query returns nothing and the code falls back
-to seed data without erroring. Check with `npx sanity datasets list`, and fix
+**Pages render with no rooms or items.**
+The dataset is private, so every query returns nothing. Check with `npx sanity datasets list`, and fix
 with `npx sanity datasets visibility set production public`.
 
 **A Sanity CLI command asks which project to use.** It could not read
